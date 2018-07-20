@@ -35,6 +35,7 @@ namespace Emzi0767.MusicTurret.Modules
     {
         private static ImmutableDictionary<int, DiscordEmoji> NumberMappings { get; }
         private static ImmutableDictionary<DiscordEmoji, int> NumberMappingsReverse { get; }
+        private static ImmutableArray<DiscordEmoji> Numbers { get; }
 
         private MusicService Music { get; }
         private YouTubeSearchProvider YouTube { get; }
@@ -47,12 +48,22 @@ namespace Emzi0767.MusicTurret.Modules
 
         static MusicModule()
         {
+            var iab = ImmutableArray.CreateBuilder<DiscordEmoji>();
+            iab.Add(DiscordEmoji.FromUnicode("1\u20e3"));
+            iab.Add(DiscordEmoji.FromUnicode("2\u20e3"));
+            iab.Add(DiscordEmoji.FromUnicode("3\u20e3"));
+            iab.Add(DiscordEmoji.FromUnicode("4\u20e3"));
+            iab.Add(DiscordEmoji.FromUnicode("5\u20e3"));
+            iab.Add(DiscordEmoji.FromUnicode("\u274c"));
+            Numbers = iab.ToImmutable();
+
             var idb = ImmutableDictionary.CreateBuilder<int, DiscordEmoji>();
             idb.Add(0, DiscordEmoji.FromUnicode("1\u20e3"));
             idb.Add(1, DiscordEmoji.FromUnicode("2\u20e3"));
             idb.Add(2, DiscordEmoji.FromUnicode("3\u20e3"));
             idb.Add(3, DiscordEmoji.FromUnicode("4\u20e3"));
             idb.Add(4, DiscordEmoji.FromUnicode("5\u20e3"));
+            idb.Add(-1, DiscordEmoji.FromUnicode("\u274c"));
             NumberMappings = idb.ToImmutable();
             var idb2 = ImmutableDictionary.CreateBuilder<DiscordEmoji, int>();
             idb2.AddRange(NumberMappings.ToDictionary(x => x.Value, x => x.Key));
@@ -134,16 +145,32 @@ namespace Emzi0767.MusicTurret.Modules
 
             var msgC = string.Join("\n", results.Select((x, i) => $"{NumberMappings[i]} {Formatter.Bold(Formatter.Sanitize(x.Title))} by {Formatter.Bold(Formatter.Sanitize(x.Author))}"));
             var msg = await ctx.RespondAsync(msgC).ConfigureAwait(false);
-            foreach (var emoji in NumberMappings.Values)
+            foreach (var emoji in Numbers)
                 await msg.CreateReactionAsync(emoji).ConfigureAwait(false);
             var res = await interactivity.WaitForMessageReactionAsync(x => NumberMappingsReverse.ContainsKey(x), msg, ctx.User, TimeSpan.FromSeconds(30)).ConfigureAwait(false);
             if (res == null)
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No choice was made.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No choice was made.").ConfigureAwait(false);
+                try
+                {
+                    await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
+                }
+                catch { }
                 return;
             }
 
             var elInd = NumberMappingsReverse[res.Emoji];
+            if (elInd == -1)
+            {
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Choice cancelled.").ConfigureAwait(false);
+                try
+                {
+                    await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
+                }
+                catch { }
+                return;
+            }
+
             var el = results.ElementAt(elInd);
             var url = new Uri($"https://youtu.be/{el.Id}");
 
@@ -162,11 +189,23 @@ namespace Emzi0767.MusicTurret.Modules
             gmd.Play();
 
             if (trackCount > 1)
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {trackCount:#,##0} tracks to playback queue.").ConfigureAwait(false);
+            {
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {trackCount:#,##0} tracks to playback queue.").ConfigureAwait(false);
+                try
+                {
+                    await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
+                }
+                catch { }
+            }
             else
             {
                 var track = tracks.First();
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))} to the playback queue.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))} to the playback queue.").ConfigureAwait(false);
+                try
+                {
+                    await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
+                }
+                catch { }
             }
         }
 
@@ -550,8 +589,11 @@ namespace Emzi0767.MusicTurret.Modules
                 .GroupBy(x => x.index / 10)
                 .Select(xg => new Page { Content = $"Now playing: {gmd.NowPlaying.ToTrackString()}\n\n{string.Join("\n", xg.Select(xa => $"`{xa.index + 1:00}` {xa.str}"))}\n\n{(gmd.RepeatMode == RepeatMode.All ? "The entire queue is repeated.\n\n" : "")}Page {xg.Key + 1}/{pageCount}" });
 
-            if (!pages.Any())
+            var trk = gmd.NowPlaying;
+            if (!pages.Any() && trk.Track.TrackString == null) 
                 pages = new List<Page>() { new Page { Content = "Queue is empty!" } };
+            else if (!pages.Any())
+                pages = new List<Page>() { new Page { Content = $"Now playing: {gmd.NowPlaying.ToTrackString()}" } };
 
             await interactivity.SendPaginatedMessage(ctx.Channel, ctx.User, pages, TimeSpan.FromMinutes(2), TimeoutBehaviour.Ignore);
         }
