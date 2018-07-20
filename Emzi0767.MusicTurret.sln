@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emzi0767.MusicTurret", "Emzi0767.MusicTurret\Emzi0767.MusicTurret.csproj", "{9040B8E2-057E-40CF-949D-9F7D9D0BEA04}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1AE4D00-A5E7-4BDB-A427-C20AA0D16B30}"
+	ProjectSection(SolutionItems) = preProject
+		license.txt = license.txt
+		notice.txt = notice.txt
+		readme.md = readme.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{FBF4A86B-4C48-48A4-B94A-EC436D0600B8}"
+	ProjectSection(SolutionItems) = preProject
+		Database\schema_v1.sql = Database\schema_v1.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{06C9B896-03DC-456F-81F5-43329B7A018A}"
+	ProjectSection(SolutionItems) = preProject
+		Scripts\bot.sh = Scripts\bot.sh
+		Scripts\lavalink.sh = Scripts\lavalink.sh
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9040B8E2-057E-40CF-949D-9F7D9D0BEA04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9040B8E2-057E-40CF-949D-9F7D9D0BEA04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9040B8E2-057E-40CF-949D-9F7D9D0BEA04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9040B8E2-057E-40CF-949D-9F7D9D0BEA04}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0B23A7AB-E37F-46FE-8B40-F931EAE40A02}
+	EndGlobalSection
+EndGlobal

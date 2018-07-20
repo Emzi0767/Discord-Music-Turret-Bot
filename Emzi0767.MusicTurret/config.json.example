@@ -1,0 +1,38 @@
+﻿{
+  "version": {
+    "numeric": 1,
+    "bot": "1.0.0"
+  },
+  "discord": {
+    "token": "insert_token_here",
+    "prefixes": [ "t!", ">>", ".." ],
+    "mention_prefix": true,
+    "message_cache_size": 512,
+    "shards": 1,
+    "game": "lots of music"
+  },
+  "postgres": {
+    "hostname": "localhost",
+    "port": 5432,
+    "database": "discord_turret",
+    "username": "discord_turret",
+    "password": "hunter2",
+    "ssl": true,
+    "trust_certificate": true
+  },
+  "redis": {
+    "hostname": "localhost",
+    "port": 6379,
+    "password": null,
+    "ssl": true
+  },
+  "lavalink": {
+    "hostname": "localhost",
+    "port_ws": 80,
+    "port_rest": 2333,
+    "password": "youshallnotpass"
+  },
+  "youtube": {
+    "api_key": "insert_api_key_here"
+  }
+}
