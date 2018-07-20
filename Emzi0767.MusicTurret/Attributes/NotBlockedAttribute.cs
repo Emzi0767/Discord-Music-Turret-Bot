@@ -46,7 +46,7 @@ namespace Emzi0767.MusicTurret.Attributes
 
             var db = ctx.Services.GetService<DatabaseContext>();
             var blocked = db.BlockedEntities.Any(x => (x.Id == uid && x.Kind == DatabaseEntityKind.User) || (x.Id == cid && x.Kind == DatabaseEntityKind.Channel) || (x.Id == gid && x.Kind == DatabaseEntityKind.Channel));
-            return Task.FromResult(blocked);
+            return Task.FromResult(!blocked);
         }
     }
 }
