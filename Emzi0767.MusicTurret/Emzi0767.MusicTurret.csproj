@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>  
+<!-- 
+  This file is a part of Music Turret project.
+  
+  Copyright (C) 2018-2021 Emzi0767
+  
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+  
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+  
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <Version>1.7.2</Version>
+    <AssemblyVersion>$(Version).0</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <AssemblyTitle>Music Turret Discord Bot</AssemblyTitle>
+    <LangVersion>8.0</LangVersion>
+    <DebugType>Portable</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00858" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00858" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00858" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.1.0-nightly-00858" />
+    <PackageReference Include="Emzi0767.Common" Version="2.6.2" />
+    <PackageReference Include="Humanizer.Core" Version="2.10.1" />
+    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.0-preview2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-preview.3.21201.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
