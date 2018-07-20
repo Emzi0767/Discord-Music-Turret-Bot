@@ -83,7 +83,7 @@ namespace Emzi0767.MusicTurret.Services
             var t = typeof(TProp);
             object cvval;
             if (t.IsEnum)
-                cvval = Enum.Parse(t, val);
+                cvval = val.HasValue ? Enum.Parse(t, val) : defaultValue;
             else
                 cvval = val.HasValue ? Convert.ChangeType((string)val, typeof(TProp)) : defaultValue;
             prop.SetValue(obj, cvval);
