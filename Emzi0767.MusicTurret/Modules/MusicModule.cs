@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -58,11 +59,11 @@ namespace Emzi0767.MusicTurret.Modules
             Numbers = iab.ToImmutable();
 
             var idb = ImmutableDictionary.CreateBuilder<int, DiscordEmoji>();
-            idb.Add(0, DiscordEmoji.FromUnicode("1\u20e3"));
-            idb.Add(1, DiscordEmoji.FromUnicode("2\u20e3"));
-            idb.Add(2, DiscordEmoji.FromUnicode("3\u20e3"));
-            idb.Add(3, DiscordEmoji.FromUnicode("4\u20e3"));
-            idb.Add(4, DiscordEmoji.FromUnicode("5\u20e3"));
+            idb.Add(1, DiscordEmoji.FromUnicode("1\u20e3"));
+            idb.Add(2, DiscordEmoji.FromUnicode("2\u20e3"));
+            idb.Add(3, DiscordEmoji.FromUnicode("3\u20e3"));
+            idb.Add(4, DiscordEmoji.FromUnicode("4\u20e3"));
+            idb.Add(5, DiscordEmoji.FromUnicode("5\u20e3"));
             idb.Add(-1, DiscordEmoji.FromUnicode("\u274c"));
             NumberMappings = idb.ToImmutable();
             var idb2 = ImmutableDictionary.CreateBuilder<DiscordEmoji, int>();
@@ -98,6 +99,8 @@ namespace Emzi0767.MusicTurret.Modules
                 return;
             }
 
+            if (gmd.IsShuffled)
+                tracks = this.Music.Shuffle(tracks);
             var trackCount = tracks.Count();
             foreach (var track in tracks)
                 gmd.Enqueue(new MusicItem(track, ctx.Member));
@@ -143,44 +146,71 @@ namespace Emzi0767.MusicTurret.Modules
                 return;
             }
 
-            var msgC = string.Join("\n", results.Select((x, i) => $"{NumberMappings[i]} {Formatter.Bold(Formatter.Sanitize(x.Title))} by {Formatter.Bold(Formatter.Sanitize(x.Author))}"));
+            var msgC = string.Join("\n", results.Select((x, i) => $"{NumberMappings[i + 1]} {Formatter.Bold(Formatter.Sanitize(x.Title))} by {Formatter.Bold(Formatter.Sanitize(x.Author))}"));
+            msgC = $"{msgC}\n\nType a number 1-{results.Count()} to queue a track. To cancel, type cancel or {Numbers.Last()}.";
             var msg = await ctx.RespondAsync(msgC).ConfigureAwait(false);
-            foreach (var emoji in Numbers)
-                await msg.CreateReactionAsync(emoji).ConfigureAwait(false);
-            var res = await interactivity.WaitForMessageReactionAsync(x => NumberMappingsReverse.ContainsKey(x), msg, ctx.User, TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+
+            //foreach (var emoji in Numbers)
+            //    await msg.CreateReactionAsync(emoji).ConfigureAwait(false);
+            //var res = await interactivity.WaitForMessageReactionAsync(x => NumberMappingsReverse.ContainsKey(x), msg, ctx.User, TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+
+            var res = await interactivity.WaitForMessageAsync(x => x.Author == ctx.User, TimeSpan.FromSeconds(30));
             if (res == null)
             {
                 await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No choice was made.").ConfigureAwait(false);
-                try
-                {
-                    await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
-                }
-                catch { }
                 return;
             }
 
-            var elInd = NumberMappingsReverse[res.Emoji];
+            var resInd = res.Message.Content.Trim();
+            if (!int.TryParse(resInd, NumberStyles.Integer, CultureInfo.InvariantCulture, out var elInd))
+            {
+                if (resInd.ToLowerInvariant() == "cancel")
+                {
+                    elInd = -1;
+                }
+                else
+                {
+                    var em = DiscordEmoji.FromUnicode(resInd);
+                    if (!NumberMappingsReverse.ContainsKey(em))
+                    {
+                        await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid choice was made.").ConfigureAwait(false);
+                        return;
+                    }
+
+                    elInd = NumberMappingsReverse[em];
+                }
+            }
+            else if (elInd < 1)
+            {
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid choice was made.").ConfigureAwait(false);
+                return;
+            }
+
+            if (!NumberMappings.ContainsKey(elInd))
+            {
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid choice was made.").ConfigureAwait(false);
+                return;
+            }
+
+            //var elInd = NumberMappingsReverse[res.Emoji];
             if (elInd == -1)
             {
                 await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Choice cancelled.").ConfigureAwait(false);
-                try
-                {
-                    await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
-                }
-                catch { }
                 return;
             }
-
-            var el = results.ElementAt(elInd);
+            
+            var el = results.ElementAt(elInd - 1);
             var url = new Uri($"https://youtu.be/{el.Id}");
 
             var tracks = await this.Music.GetTracksAsync(url).ConfigureAwait(false);
             if (!tracks.Any())
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.").ConfigureAwait(false);
                 return;
             }
 
+            if (gmd.IsShuffled)
+                tracks = this.Music.Shuffle(tracks);
             var trackCount = tracks.Count();
             foreach (var track in tracks)
                 gmd.Enqueue(new MusicItem(track, ctx.Member));
@@ -191,21 +221,11 @@ namespace Emzi0767.MusicTurret.Modules
             if (trackCount > 1)
             {
                 await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {trackCount:#,##0} tracks to playback queue.").ConfigureAwait(false);
-                try
-                {
-                    await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
-                }
-                catch { }
             }
             else
             {
                 var track = tracks.First();
                 await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))} to the playback queue.").ConfigureAwait(false);
-                try
-                {
-                    await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
-                }
-                catch { }
             }
         }
 

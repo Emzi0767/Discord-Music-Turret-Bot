@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
@@ -83,5 +84,13 @@ namespace Emzi0767.MusicTurret.Services
         /// <returns>Loaded tracks.</returns>
         public Task<IEnumerable<LavalinkTrack>> GetTracksAsync(Uri uri)
             => this.Lavalink.LavalinkNode.GetTracksAsync(uri);
+
+        /// <summary>
+        /// Shuffles the supplied track list.
+        /// </summary>
+        /// <param name="tracks">Collection of tracks to shuffle.</param>
+        /// <returns>Shuffled track collection.</returns>
+        public IEnumerable<LavalinkTrack> Shuffle(IEnumerable<LavalinkTrack> tracks)
+            => tracks.OrderBy(x => this.RNG.Next());
     }
 }
