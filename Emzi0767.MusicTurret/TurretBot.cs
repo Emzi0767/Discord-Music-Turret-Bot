@@ -81,6 +81,7 @@ namespace Emzi0767.MusicTurret
         private ConnectionStringProvider ConnectionStringProvider { get; }
         private AsyncExecutor AsyncExecutor { get; }
         private Timer GameTimer { get; set; } = null;
+        private IServiceProvider Services { get; }
 
         private readonly object _logLock = new object();
 
@@ -125,9 +126,10 @@ namespace Emzi0767.MusicTurret
             this.Discord.ClientErrored += this.Discord_ClientErrored;
             this.Discord.SocketErrored += this.Discord_SocketErrored;
             this.Discord.GuildAvailable += this.Discord_GuildAvailable;
+            this.Discord.VoiceStateUpdated += this.Discord_VoiceStateUpdated;
 
             // create service provider
-            var services = new ServiceCollection()
+            this.Services = new ServiceCollection()
                 .AddTransient<CSPRNG>()
                 .AddSingleton(this.ConnectionStringProvider)
                 .AddSingleton<MusicService>()
@@ -152,7 +154,7 @@ namespace Emzi0767.MusicTurret
                 EnableMentionPrefix = cfg.Discord.EnableMentionPrefix,
                 PrefixResolver = this.ResolvePrefixAsync,
                 
-                Services = services
+                Services = this.Services
             });
 
             // set help formatter
@@ -278,6 +280,29 @@ namespace Emzi0767.MusicTurret
             return Task.CompletedTask;
         }
 
+        private async Task Discord_VoiceStateUpdated(VoiceStateUpdateEventArgs e)
+        {
+            if (e.User == this.Discord.CurrentUser)
+                return;
+
+            var music = this.Services.GetService<MusicService>();
+            var gmd = await music.GetOrCreateDataAsync(e.Guild).ConfigureAwait(false);
+            var chn = gmd.Channel;
+            if (chn == null || chn != e.Before.Channel)
+                return;
+
+            var usrs = chn.Users;
+            if (usrs.Count() == 1 && usrs.First() == this.Discord.CurrentUser)
+            {
+                e.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, $"All users left voice in {e.Guild.Name}, pausing playback", DateTime.Now);
+                gmd.Pause();
+                await gmd.SaveAsync().ConfigureAwait(false);
+                
+                if (gmd.CommandChannel != null)
+                    await gmd.CommandChannel.SendMessageAsync($"{DiscordEmoji.FromName(e.Client, ":play_pause:")} All users left the channel, playback paused. You can resume it by joining the channel and using the `resume` command.");
+            }
+        }
+
         private Task CommandsNext_CommandExecuted(CommandExecutionEventArgs e)
         {
             e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG,
@@ -298,6 +323,8 @@ namespace Emzi0767.MusicTurret
                 ex = ex.InnerException;
 
             if (ex is CommandNotFoundException)
+            { } // ignore
+            else if (ex is CommandCancelledException)
             { } // ignore
             else if (ex is ChecksFailedException cfe)
             {

@@ -41,6 +41,8 @@ namespace Emzi0767.MusicTurret.Modules
         private MusicService Music { get; }
         private YouTubeSearchProvider YouTube { get; }
 
+        private GuildMusicData GuildMusic { get; set; }
+
         public MusicModule(MusicService music, YouTubeSearchProvider yt)
         {
             this.Music = music;
@@ -71,27 +73,33 @@ namespace Emzi0767.MusicTurret.Modules
             NumberMappingsReverse = idb2.ToImmutable();
         }
 
-        [Command("play"), Description("Plays supplied URL or searches for specified keywords."), Aliases("p"), Priority(1)]
-        public async Task PlayAsync(CommandContext ctx, 
-            [Description("URL to play from.")] Uri uri)
+        public override async Task BeforeExecutionAsync(CommandContext ctx)
         {
             var vs = ctx.Member.VoiceState;
             var chn = vs.Channel;
             if (chn == null)
             {
                 await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
+                throw new CommandCancelledException();
             }
 
             var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
             if (mbr != null && chn != mbr)
             {
                 await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
+                throw new CommandCancelledException();
             }
 
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-            
+            this.GuildMusic = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
+            this.GuildMusic.CommandChannel = ctx.Channel;
+
+            await base.BeforeExecutionAsync(ctx).ConfigureAwait(false);
+        }
+
+        [Command("play"), Description("Plays supplied URL or searches for specified keywords."), Aliases("p"), Priority(1)]
+        public async Task PlayAsync(CommandContext ctx, 
+            [Description("URL to play from.")] Uri uri)
+        {
             var tracks = await this.Music.GetTracksAsync(uri).ConfigureAwait(false);
             if (!tracks.Any())
             {
@@ -99,14 +107,16 @@ namespace Emzi0767.MusicTurret.Modules
                 return;
             }
 
-            if (gmd.IsShuffled)
+            if (this.GuildMusic.IsShuffled)
                 tracks = this.Music.Shuffle(tracks);
             var trackCount = tracks.Count();
             foreach (var track in tracks)
-                gmd.Enqueue(new MusicItem(track, ctx.Member));
+                this.GuildMusic.Enqueue(new MusicItem(track, ctx.Member));
 
-            await gmd.CreatePlayerAsync(chn).ConfigureAwait(false);
-            gmd.Play();
+            var vs = ctx.Member.VoiceState;
+            var chn = vs.Channel;
+            await this.GuildMusic.CreatePlayerAsync(chn).ConfigureAwait(false);
+            this.GuildMusic.Play();
 
             if (trackCount > 1)
                 await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {trackCount:#,##0} tracks to playback queue.").ConfigureAwait(false);
@@ -121,22 +131,6 @@ namespace Emzi0767.MusicTurret.Modules
         public async Task PlayAsync(CommandContext ctx, 
             [RemainingText, Description("Terms to search for.")] string term)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
             var interactivity = ctx.Client.GetInteractivity();
 
             var results = await this.YouTube.SearchAsync(term).ConfigureAwait(false);
@@ -209,14 +203,16 @@ namespace Emzi0767.MusicTurret.Modules
                 return;
             }
 
-            if (gmd.IsShuffled)
+            if (this.GuildMusic.IsShuffled)
                 tracks = this.Music.Shuffle(tracks);
             var trackCount = tracks.Count();
             foreach (var track in tracks)
-                gmd.Enqueue(new MusicItem(track, ctx.Member));
+                this.GuildMusic.Enqueue(new MusicItem(track, ctx.Member));
 
-            await gmd.CreatePlayerAsync(chn).ConfigureAwait(false);
-            gmd.Play();
+            var vs = ctx.Member.VoiceState;
+            var chn = vs.Channel;
+            await this.GuildMusic.CreatePlayerAsync(chn).ConfigureAwait(false);
+            this.GuildMusic.Play();
 
             if (trackCount > 1)
             {
@@ -232,26 +228,9 @@ namespace Emzi0767.MusicTurret.Modules
         [Command("stop"), Description("Stops playback and quits the voice channel.")]
         public async Task StopAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            int rmd = gmd.EmptyQueue();
-            gmd.Stop();
-            await gmd.DestroyPlayerAsync().ConfigureAwait(false);
+            int rmd = this.GuildMusic.EmptyQueue();
+            this.GuildMusic.Stop();
+            await this.GuildMusic.DestroyPlayerAsync().ConfigureAwait(false);
 
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Removed {rmd:#,##0} tracks from the queue.").ConfigureAwait(false);
         }
@@ -259,143 +238,47 @@ namespace Emzi0767.MusicTurret.Modules
         [Command("pause"), Description("Pauses playback.")]
         public async Task PauseAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            gmd.Pause();
+            this.GuildMusic.Pause();
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Playback paused. Use {Formatter.InlineCode($"{ctx.Prefix}resume")} to resume playback.").ConfigureAwait(false);
         }
 
         [Command("resume"), Description("Resumes playback."), Aliases("unpause")]
         public async Task ResumeAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            gmd.Resume();
+            this.GuildMusic.Resume();
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Playback resumed.").ConfigureAwait(false);
         }
 
         [Command("skip"), Description("Skips current track."), Aliases("next")]
         public async Task SkipAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            var track = gmd.NowPlaying;
-            gmd.Stop();
+            var track = this.GuildMusic.NowPlaying;
+            this.GuildMusic.Stop();
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} skipped.").ConfigureAwait(false);
         }
 
         [Command("seek"), Description("Seeks to specified time in current track.")]
-        public async Task SeekAsync(CommandContext ctx,
+        public Task SeekAsync(CommandContext ctx,
             [RemainingText, Description("Which time point to seek to.")] TimeSpan position)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-            gmd.Seek(position, false);
+            this.GuildMusic.Seek(position, false);
+            return Task.CompletedTask;
         }
 
         [Command("forward"), Description("Forwards the track by specified amount of time.")]
-        public async Task ForwardAsync(CommandContext ctx,
+        public Task ForwardAsync(CommandContext ctx,
             [RemainingText, Description("By how much to forward.")] TimeSpan offset)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-            gmd.Seek(offset, true);
+            this.GuildMusic.Seek(offset, true);
+            return Task.CompletedTask;
         }
 
         [Command("rewind"), Description("Rewinds the track by specified amount of time.")]
-        public async Task RewindAsync(CommandContext ctx,
+        public Task RewindAsync(CommandContext ctx,
             [RemainingText, Description("By how much to rewind.")] TimeSpan offset)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-            gmd.Seek(-offset, true);
+            this.GuildMusic.Seek(-offset, true);
+            return Task.CompletedTask;
         }
 
         [Command("volume"), Description("Sets playback volume."), Aliases("v")]
@@ -408,49 +291,15 @@ namespace Emzi0767.MusicTurret.Modules
                 return;
             }
 
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            gmd.SetVolume(volume);
+            this.GuildMusic.SetVolume(volume);
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Volume set to {volume}%.").ConfigureAwait(false);
         }
 
         [Command("restart"), Description("Restarts the playback of the current track.")]
         public async Task RestartAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            var track = gmd.NowPlaying;
-            gmd.Restart();
+            var track = this.GuildMusic.NowPlaying;
+            this.GuildMusic.Restart();
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} restarted.").ConfigureAwait(false);
         }
 
@@ -458,23 +307,6 @@ namespace Emzi0767.MusicTurret.Modules
         public async Task RepeatAsync(CommandContext ctx, 
             [Description("Repeat mode. Can be all, single, or none.")] string mode = null)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
             var rmc = new RepeatModeConverter();
             if (!rmc.TryFromString(mode, out var rm))
             {
@@ -482,38 +314,21 @@ namespace Emzi0767.MusicTurret.Modules
                 return;
             }
 
-            gmd.SetRepeatMode(rm);
+            this.GuildMusic.SetRepeatMode(rm);
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Repeat mode set to {rm}.").ConfigureAwait(false);
         }
 
         [Command("shuffle"), Description("Toggles shuffle mode.")]
         public async Task ShuffleAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
+            if (this.GuildMusic.IsShuffled)
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            if (gmd.IsShuffled)
-            {
-                gmd.StopShuffle();
+                this.GuildMusic.StopShuffle();
                 await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Queue is no longer shuffled.").ConfigureAwait(false);
             }
             else
             {
-                gmd.Shuffle();
+                this.GuildMusic.Shuffle();
                 await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Queue is now shuffled.").ConfigureAwait(false);
             }
         }
@@ -521,24 +336,7 @@ namespace Emzi0767.MusicTurret.Modules
         [Command("reshuffle"), Description("Reshuffles the queue. If queue is not shuffled, it won't enable shuffle mode.")]
         public async Task ReshuffleAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            gmd.Reshuffle();
+            this.GuildMusic.Reshuffle();
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Queue reshuffled.").ConfigureAwait(false);
         }
 
@@ -546,24 +344,7 @@ namespace Emzi0767.MusicTurret.Modules
         public async Task RemoveAsync(CommandContext ctx,
             [Description("Which track to remove.")] int index)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            var itemN = gmd.Remove(index - 1);
+            var itemN = this.GuildMusic.Remove(index - 1);
             if (itemN == null)
             {
                 await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} No such track.").ConfigureAwait(false);
@@ -577,43 +358,27 @@ namespace Emzi0767.MusicTurret.Modules
         [Command("queue"), Description("Displays current playback queue."), Aliases("q")]
         public async Task QueueAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
             var interactivity = ctx.Client.GetInteractivity();
 
-            if (gmd.RepeatMode == RepeatMode.Single)
+            if (this.GuildMusic.RepeatMode == RepeatMode.Single)
             {
-                var track = gmd.NowPlaying;
+                var track = this.GuildMusic.NowPlaying;
                 await ctx.RespondAsync($"Queue repeats {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))}.").ConfigureAwait(false);
                 return;
             }
 
-            var pageCount = gmd.Queue.Count / 10 + 1;
-            if (gmd.Queue.Count % 10 == 0) pageCount--;
-            var pages = gmd.Queue.Select(x => x.ToTrackString())
+            var pageCount = this.GuildMusic.Queue.Count / 10 + 1;
+            if (this.GuildMusic.Queue.Count % 10 == 0) pageCount--;
+            var pages = this.GuildMusic.Queue.Select(x => x.ToTrackString())
                 .Select((s, i) => new { str = s, index = i })
                 .GroupBy(x => x.index / 10)
-                .Select(xg => new Page { Content = $"Now playing: {gmd.NowPlaying.ToTrackString()}\n\n{string.Join("\n", xg.Select(xa => $"`{xa.index + 1:00}` {xa.str}"))}\n\n{(gmd.RepeatMode == RepeatMode.All ? "The entire queue is repeated.\n\n" : "")}Page {xg.Key + 1}/{pageCount}" });
+                .Select(xg => new Page { Content = $"Now playing: {this.GuildMusic.NowPlaying.ToTrackString()}\n\n{string.Join("\n", xg.Select(xa => $"`{xa.index + 1:00}` {xa.str}"))}\n\n{(this.GuildMusic.RepeatMode == RepeatMode.All ? "The entire queue is repeated.\n\n" : "")}Page {xg.Key + 1}/{pageCount}" });
 
-            var trk = gmd.NowPlaying;
+            var trk = this.GuildMusic.NowPlaying;
             if (!pages.Any() && trk.Track.TrackString == null) 
                 pages = new List<Page>() { new Page { Content = "Queue is empty!" } };
             else if (!pages.Any())
-                pages = new List<Page>() { new Page { Content = $"Now playing: {gmd.NowPlaying.ToTrackString()}" } };
+                pages = new List<Page>() { new Page { Content = $"Now playing: {this.GuildMusic.NowPlaying.ToTrackString()}" } };
 
             await interactivity.SendPaginatedMessage(ctx.Channel, ctx.User, pages, TimeSpan.FromMinutes(2), TimeoutBehaviour.Ignore);
         }
@@ -621,55 +386,21 @@ namespace Emzi0767.MusicTurret.Modules
         [Command("nowplaying"), Description("Displays information about currently-played track."), Aliases("np")]
         public async Task NowPlayingAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            var track = gmd.NowPlaying;
-            if (gmd.NowPlaying.Track.TrackString == null)
+            var track = this.GuildMusic.NowPlaying;
+            if (this.GuildMusic.NowPlaying.Track.TrackString == null)
             {
                 await ctx.RespondAsync($"Not playing.").ConfigureAwait(false);
             }
             else
             {
-                await ctx.RespondAsync($"Now playing: {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} [{gmd.GetCurrentPosition().ToDurationString()}/{gmd.NowPlaying.Track.Length.ToDurationString()}] requested by {Formatter.Bold(Formatter.Sanitize(gmd.NowPlaying.RequestedBy.DisplayName))}.").ConfigureAwait(false);
+                await ctx.RespondAsync($"Now playing: {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} [{this.GuildMusic.GetCurrentPosition().ToDurationString()}/{this.GuildMusic.NowPlaying.Track.Length.ToDurationString()}] requested by {Formatter.Bold(Formatter.Sanitize(this.GuildMusic.NowPlaying.RequestedBy.DisplayName))}.").ConfigureAwait(false);
             }
         }
 
         [Command("playerinfo"), Description("Displays information about current player."), Aliases("pinfo", "pinf"), Hidden]
         public async Task PlayerInfoAsync(CommandContext ctx)
         {
-            var vs = ctx.Member.VoiceState;
-            var chn = vs.Channel;
-            if (chn == null)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
-            if (mbr != null && chn != mbr)
-            {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
-                return;
-            }
-
-            var gmd = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
-
-            await ctx.RespondAsync($"Queue length: {gmd.Queue.Count}\nIs shuffled? {(gmd.IsShuffled ? "Yes" : "No")}\nRepeat mode: {gmd.RepeatMode}\nVolume: {gmd.Volume}%").ConfigureAwait(false);
+            await ctx.RespondAsync($"Queue length: {this.GuildMusic.Queue.Count}\nIs shuffled? {(this.GuildMusic.IsShuffled ? "Yes" : "No")}\nRepeat mode: {this.GuildMusic.RepeatMode}\nVolume: {this.GuildMusic.Volume}%").ConfigureAwait(false);
         }
     }
 }

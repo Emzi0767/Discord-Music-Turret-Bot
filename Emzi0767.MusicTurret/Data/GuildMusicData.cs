@@ -63,6 +63,16 @@ namespace Emzi0767.MusicTurret.Data
         /// </summary>
         public MusicItem NowPlaying { get; private set; } = default;
 
+        /// <summary>
+        /// Gets the channel in which the music is played.
+        /// </summary>
+        public DiscordChannel Channel => this.Player?.Channel;
+
+        /// <summary>
+        /// Gets or sets the channel in which commands are executed.
+        /// </summary>
+        public DiscordChannel CommandChannel { get; set; }
+
         private List<MusicItem> QueueInternal { get; set; }
         private string QueueSerialized { get; set; }
         private DiscordGuild Guild { get; }
