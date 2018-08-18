@@ -146,7 +146,6 @@ namespace Emzi0767.MusicTurret
                 CaseSensitive = false,
                 EnableDms = false,
                 IgnoreExtraArguments = false,
-                Selfbot = false,
 
                 EnableDefaultHelp = true,
                 DefaultHelpChecks = new[] { new NotBlockedAttribute() },

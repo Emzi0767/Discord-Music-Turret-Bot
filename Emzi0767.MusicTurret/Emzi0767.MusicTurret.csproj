@@ -27,13 +27,14 @@
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <AssemblyTitle>Music Turret Discord Bot</AssemblyTitle>
     <LangVersion>7.2</LangVersion>
+    <DebugType>Portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-beta-00478" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-beta-00478" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-beta-00478" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-beta-00478" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-beta-00509" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-beta-00509" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-beta-00509" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-beta-00509" />
     <PackageReference Include="Humanizer.Core" Version="2.4.2" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
