@@ -163,6 +163,7 @@ namespace Emzi0767.MusicTurret.Data
             if (this.Player == null || !this.Player.IsConnected)
                 return;
 
+            this.NowPlaying = default;
             this.Player.Stop();
         }
 
