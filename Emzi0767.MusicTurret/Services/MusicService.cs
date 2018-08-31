@@ -82,7 +82,7 @@ namespace Emzi0767.MusicTurret.Services
         /// </summary>
         /// <param name="uri">URL to load tracks from.</param>
         /// <returns>Loaded tracks.</returns>
-        public Task<IEnumerable<LavalinkTrack>> GetTracksAsync(Uri uri)
+        public Task<LavalinkLoadResult> GetTracksAsync(Uri uri)
             => this.Lavalink.LavalinkNode.GetTracksAsync(uri);
 
         /// <summary>

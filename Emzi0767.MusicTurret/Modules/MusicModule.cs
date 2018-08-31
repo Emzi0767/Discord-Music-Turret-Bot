@@ -25,6 +25,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Lavalink;
 using Emzi0767.MusicTurret.Attributes;
 using Emzi0767.MusicTurret.Data;
 using Emzi0767.MusicTurret.Services;
@@ -100,8 +101,9 @@ namespace Emzi0767.MusicTurret.Modules
         public async Task PlayAsync(CommandContext ctx, 
             [Description("URL to play from.")] Uri uri)
         {
-            var tracks = await this.Music.GetTracksAsync(uri).ConfigureAwait(false);
-            if (!tracks.Any())
+            var trackLoad = await this.Music.GetTracksAsync(uri).ConfigureAwait(false);
+            var tracks = trackLoad.Tracks;
+            if (trackLoad.LoadResultType != LavalinkLoadResultType.LoadFailed || !tracks.Any())
             {
                 await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.").ConfigureAwait(false);
                 return;
@@ -196,8 +198,9 @@ namespace Emzi0767.MusicTurret.Modules
             var el = results.ElementAt(elInd - 1);
             var url = new Uri($"https://youtu.be/{el.Id}");
 
-            var tracks = await this.Music.GetTracksAsync(url).ConfigureAwait(false);
-            if (!tracks.Any())
+            var trackLoad = await this.Music.GetTracksAsync(url).ConfigureAwait(false);
+            var tracks = trackLoad.Tracks;
+            if (trackLoad.LoadResultType != LavalinkLoadResultType.LoadFailed || !tracks.Any())
             {
                 await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.").ConfigureAwait(false);
                 return;
