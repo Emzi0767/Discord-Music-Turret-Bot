@@ -103,7 +103,7 @@ namespace Emzi0767.MusicTurret.Modules
         {
             var trackLoad = await this.Music.GetTracksAsync(uri).ConfigureAwait(false);
             var tracks = trackLoad.Tracks;
-            if (trackLoad.LoadResultType != LavalinkLoadResultType.LoadFailed || !tracks.Any())
+            if (trackLoad.LoadResultType == LavalinkLoadResultType.LoadFailed || !tracks.Any())
             {
                 await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.").ConfigureAwait(false);
                 return;
@@ -200,7 +200,7 @@ namespace Emzi0767.MusicTurret.Modules
 
             var trackLoad = await this.Music.GetTracksAsync(url).ConfigureAwait(false);
             var tracks = trackLoad.Tracks;
-            if (trackLoad.LoadResultType != LavalinkLoadResultType.LoadFailed || !tracks.Any())
+            if (trackLoad.LoadResultType == LavalinkLoadResultType.LoadFailed || !tracks.Any())
             {
                 await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.").ConfigureAwait(false);
                 return;
