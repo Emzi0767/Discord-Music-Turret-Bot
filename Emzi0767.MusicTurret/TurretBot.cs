@@ -159,10 +159,6 @@ namespace Emzi0767.MusicTurret
             // set help formatter
             this.CommandsNext.SetHelpFormatter<TurretHelpFormatter>();
 
-            // register converters
-            this.CommandsNext.RegisterConverter(new UriConverter());
-            this.CommandsNext.RegisterUserFriendlyTypeName<Uri>("URL");
-
             // attach event handlers
             this.CommandsNext.CommandExecuted += this.CommandsNext_CommandExecuted;
             this.CommandsNext.CommandErrored += this.CommandsNext_CommandErrored;

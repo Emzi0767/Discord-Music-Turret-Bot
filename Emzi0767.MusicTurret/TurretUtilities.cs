@@ -77,8 +77,6 @@ namespace Emzi0767.MusicTurret
             if (s.Length > targetLength)
                 return s.Substring(0, targetLength);
 
-
-
             return s;
         }
 

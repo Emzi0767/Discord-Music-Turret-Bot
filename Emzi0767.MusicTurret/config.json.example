@@ -1,7 +1,6 @@
 ﻿{
   "version": {
-    "numeric": 1,
-    "bot": "1.0.0"
+    "numeric": 1
   },
   "discord": {
     "token": "insert_token_here",

@@ -106,10 +106,6 @@ namespace Emzi0767.MusicTurret.Data
             // validate config version
             if (config.Version.Configuration != this.ConfigVersion)
                 throw new InvalidDataException("Configuration data version mismatch.");
-
-            // validate bot version
-            if (config.Version.Bot != this.BotVersion)
-                throw new InvalidDataException("Configuration data bot version mismatch.");
         }
     }
 }

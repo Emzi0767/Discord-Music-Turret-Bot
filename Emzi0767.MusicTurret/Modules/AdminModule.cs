@@ -26,7 +26,10 @@ using Emzi0767.MusicTurret.Services;
 
 namespace Emzi0767.MusicTurret.Modules
 {
-    [ModuleLifespan(ModuleLifespan.Transient), RequireOwner, Hidden]
+    [Group("admin")]
+    [Aliases("botctl")]
+    [ModuleLifespan(ModuleLifespan.Transient)]
+    [RequireOwner, Hidden]
     public sealed class AdminModule : BaseCommandModule
     {
         private DatabaseContext Database { get; }
@@ -39,9 +42,9 @@ namespace Emzi0767.MusicTurret.Modules
         }
 
         [Command("setblock"), Description("Sets blocked status for a user, channel, or guild."), Aliases("block", "unblock")]
-        public async Task SetBlockAsync(CommandContext ctx, 
-            [Description("Whether the user should be blocked.")] bool blocked, 
+        public async Task SetBlockAsync(CommandContext ctx,
             [Description("User whose block status to change.")] DiscordUser user,
+            [Description("Whether the user should be blocked.")] bool blocked, 
             [RemainingText, Description("Reason why this user is blocked.")] string reason = null)
         {
             var uid = (long)user.Id;
@@ -68,8 +71,8 @@ namespace Emzi0767.MusicTurret.Modules
 
         [Command("setblock")]
         public async Task SetBlockAsync(CommandContext ctx,
-            [Description("Whether the user should be blocked.")] bool blocked,
             [Description("Channel of which block status to change.")] DiscordChannel channel,
+            [Description("Whether the user should be blocked.")] bool blocked,
             [RemainingText, Description("Reason why this user is blocked.")] string reason = null)
         {
             var cid = (long)channel.Id;
@@ -96,8 +99,8 @@ namespace Emzi0767.MusicTurret.Modules
 
         [Command("setblock")]
         public async Task SetBlockAsync(CommandContext ctx,
-            [Description("Whether the user should be blocked.")] bool blocked,
             [Description("Guild of which block status to change.")] DiscordGuild guild,
+            [Description("Whether the user should be blocked.")] bool blocked,
             [RemainingText, Description("Reason why this user is blocked.")] string reason = null)
         {
             var gid = (long)guild.Id;

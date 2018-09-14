@@ -71,12 +71,6 @@ namespace Emzi0767.MusicTurret.Data
         /// </summary>
         [JsonProperty("config")]
         public int Configuration { get; private set; }
-
-        /// <summary>
-        /// Gets the string of the bot version for which the config is meant for.
-        /// </summary>
-        [JsonProperty("bot")]
-        public string Bot { get; private set; }
     }
 
     /// <summary>
