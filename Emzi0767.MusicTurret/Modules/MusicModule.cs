@@ -110,7 +110,15 @@ namespace Emzi0767.MusicTurret.Modules
             }
 
             if (this.GuildMusic.IsShuffled)
+            {
                 tracks = this.Music.Shuffle(tracks);
+            }
+            else if (trackLoad.LoadResultType == LavalinkLoadResultType.PlaylistLoaded && trackLoad.PlaylistInfo.SelectedTrack > 0)
+            {
+                var index = trackLoad.PlaylistInfo.SelectedTrack;
+                tracks = tracks.Skip(index).Concat(tracks.Take(index));
+            }
+
             var trackCount = tracks.Count();
             foreach (var track in tracks)
                 this.GuildMusic.Enqueue(new MusicItem(track, ctx.Member));
