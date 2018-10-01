@@ -27,7 +27,7 @@ namespace Emzi0767.MusicTurret.Attributes
     /// <summary>
     /// Verifies that the user is not blocked for the purpose of the command usage.
     /// </summary>
-    public sealed class NotBlockedAttribute : CheckBaseAttribute
+    public sealed class NotBlacklistedAttribute : CheckBaseAttribute
     {
         public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
@@ -45,7 +45,7 @@ namespace Emzi0767.MusicTurret.Attributes
             var gid = (long)ctx.Guild.Id;
 
             var db = ctx.Services.GetService<DatabaseContext>();
-            var blocked = db.BlockedEntities.Any(x => (x.Id == uid && x.Kind == DatabaseEntityKind.User) || (x.Id == cid && x.Kind == DatabaseEntityKind.Channel) || (x.Id == gid && x.Kind == DatabaseEntityKind.Guild));
+            var blocked = db.EntityBlacklist.Any(x => (x.Id == uid && x.Kind == DatabaseEntityKind.User) || (x.Id == cid && x.Kind == DatabaseEntityKind.Channel) || (x.Id == gid && x.Kind == DatabaseEntityKind.Guild));
             return Task.FromResult(!blocked);
         }
     }

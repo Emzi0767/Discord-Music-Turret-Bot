@@ -31,7 +31,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Emzi0767.MusicTurret.Modules
 {
-    [ModuleLifespan(ModuleLifespan.Transient), NotBlocked]
+    [ModuleLifespan(ModuleLifespan.Transient), NotBlacklisted]
     public sealed class MiscModule : BaseCommandModule
     {
         public TurretBot Bot { get; }

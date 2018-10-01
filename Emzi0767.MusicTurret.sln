@@ -15,6 +15,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{FBF4A86B-4C48-48A4-B94A-EC436D0600B8}"
 	ProjectSection(SolutionItems) = preProject
 		Database\schema_v1.sql = Database\schema_v1.sql
+		Database\schema_v1_to_v2.sql = Database\schema_v1_to_v2.sql
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{06C9B896-03DC-456F-81F5-43329B7A018A}"

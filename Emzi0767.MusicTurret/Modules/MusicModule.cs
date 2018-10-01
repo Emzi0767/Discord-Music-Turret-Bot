@@ -32,7 +32,7 @@ using Emzi0767.MusicTurret.Services;
 
 namespace Emzi0767.MusicTurret.Modules
 {
-    [ModuleLifespan(ModuleLifespan.Transient), NotBlocked]
+    [ModuleLifespan(ModuleLifespan.Transient), NotBlacklisted]
     public sealed class MusicModule : BaseCommandModule
     {
         private static ImmutableDictionary<int, DiscordEmoji> NumberMappings { get; }

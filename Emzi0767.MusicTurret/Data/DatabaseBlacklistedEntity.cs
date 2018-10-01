@@ -22,8 +22,8 @@ namespace Emzi0767.MusicTurret.Data
     /// <summary>
     /// Represents a collection of entities blocked from using the bot.
     /// </summary>
-    [Table("blocked_entities")]
-    public partial class DatabaseBlockedEntity
+    [Table("entity_blacklist")]
+    public partial class DatabaseBlacklistedEntity
     {
         /// <summary>
         /// Gets or sets the entity's ID.
