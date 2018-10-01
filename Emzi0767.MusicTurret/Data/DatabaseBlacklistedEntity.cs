@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Emzi0767.MusicTurret.Data
 {
     /// <summary>
-    /// Represents a collection of entities blocked from using the bot.
+    /// Represents an entity blacklisted from using the bot.
     /// </summary>
     [Table("entity_blacklist")]
     public partial class DatabaseBlacklistedEntity
@@ -38,13 +38,13 @@ namespace Emzi0767.MusicTurret.Data
         public DatabaseEntityKind Kind { get; set; }
 
         /// <summary>
-        /// Gets or sets the reason why the entity was blocked.
+        /// Gets or sets the reason why the entity was blacklisted.
         /// </summary>
         [Column("reason")]
         public string Reason { get; set; }
 
         /// <summary>
-        /// Gets or sets when the entity was blocked.
+        /// Gets or sets when the entity was blacklisted.
         /// </summary>
         [Column("since", TypeName = "timestamp with time zone")]
         public DateTime Since { get; set; }

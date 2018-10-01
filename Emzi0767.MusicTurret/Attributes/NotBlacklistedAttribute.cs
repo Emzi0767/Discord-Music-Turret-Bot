@@ -25,7 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Emzi0767.MusicTurret.Attributes
 {
     /// <summary>
-    /// Verifies that the user is not blocked for the purpose of the command usage.
+    /// Verifies that the user is not blacklisted for the purpose of the command usage.
     /// </summary>
     public sealed class NotBlacklistedAttribute : CheckBaseAttribute
     {
