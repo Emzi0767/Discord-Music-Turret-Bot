@@ -49,6 +49,11 @@ namespace Emzi0767.MusicTurret.Data
         public bool IsShuffled { get; private set; } = false;
 
         /// <summary>
+        /// Gets whether a track is currently playing.
+        /// </summary>
+        public bool IsPlaying { get; private set; } = false;
+
+        /// <summary>
         /// Gets the playback volume for this guild.
         /// </summary>
         public int Volume { get; private set; } = 100;
@@ -175,6 +180,7 @@ namespace Emzi0767.MusicTurret.Data
             if (this.Player == null || !this.Player.IsConnected)
                 return;
 
+            this.IsPlaying = false;
             this.Player.Pause();
         }
 
@@ -186,6 +192,7 @@ namespace Emzi0767.MusicTurret.Data
             if (this.Player == null || !this.Player.IsConnected)
                 return;
 
+            this.IsPlaying = true;
             this.Player.Resume();
         }
 
@@ -430,6 +437,7 @@ namespace Emzi0767.MusicTurret.Data
         private async Task Player_PlaybackFinished(TrackFinishEventArgs e)
         {
             await Task.Delay(500).ConfigureAwait(false);
+            this.IsPlaying = false;
             this.PlayHandler();
 
             await this.SaveAsync();
@@ -446,6 +454,7 @@ namespace Emzi0767.MusicTurret.Data
 
             var item = itemN.Value;
             this.NowPlaying = item;
+            this.IsPlaying = true;
             this.Player.Play(item.Track);
         }
     }
