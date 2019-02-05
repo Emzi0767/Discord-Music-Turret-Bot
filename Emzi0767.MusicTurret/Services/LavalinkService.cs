@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Lavalink;
-using DSharpPlus.Net.Udp;
+using DSharpPlus.Net;
 using Emzi0767.MusicTurret.Data;
 
 namespace Emzi0767.MusicTurret.Services
@@ -56,8 +56,8 @@ namespace Emzi0767.MusicTurret.Services
             {
                 Password = this.Configuration.Password,
 
-                SocketEndpoint = new ConnectionEndpoint { Hostname = this.Configuration.Hostname, Port = this.Configuration.WebSocketPort },
-                RestEndpoint = new ConnectionEndpoint { Hostname = this.Configuration.Hostname, Port = this.Configuration.RestPort }
+                SocketEndpoint = new ConnectionEndpoint(this.Configuration.Hostname, this.Configuration.Port),
+                RestEndpoint = new ConnectionEndpoint(this.Configuration.Hostname, this.Configuration.Port)
             }).ConfigureAwait(false);
         }
     }

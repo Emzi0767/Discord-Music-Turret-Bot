@@ -14,6 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -50,7 +51,8 @@ namespace Emzi0767.MusicTurret
         private static async Task MainAsync(string[] args)
         {
             // locate the config file
-            var cfgFile = new FileInfo("config.json");
+            var dockerSecret = Environment.GetEnvironmentVariable("DOCKER_SECRET");
+            var cfgFile = new FileInfo(dockerSecret != null ? Path.Combine("/run/secrets", dockerSecret) : "config.json");
 
             // load the config file and validate it
             var cfgLoader = new TurretConfigLoader();

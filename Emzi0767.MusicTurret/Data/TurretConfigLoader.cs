@@ -45,7 +45,7 @@ namespace Emzi0767.MusicTurret.Data
             this.BotVersion = TurretUtilities.GetBotVersion();
 
             // set the expected config version
-            this.ConfigVersion = 1;
+            this.ConfigVersion = 2;
         }
 
         /// <summary>

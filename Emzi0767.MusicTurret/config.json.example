@@ -1,6 +1,6 @@
 ﻿{
   "version": {
-    "numeric": 1
+    "numeric": 2
   },
   "discord": {
     "token": "insert_token_here",
@@ -27,8 +27,7 @@
   },
   "lavalink": {
     "hostname": "localhost",
-    "port_ws": 80,
-    "port_rest": 2333,
+    "port": 2333,
     "password": "youshallnotpass"
   },
   "youtube": {
