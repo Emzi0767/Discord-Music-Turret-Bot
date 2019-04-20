@@ -25,6 +25,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Lavalink;
 using Emzi0767.MusicTurret.Attributes;
 using Emzi0767.MusicTurret.Data;
@@ -159,13 +160,13 @@ namespace Emzi0767.MusicTurret.Modules
             //var res = await interactivity.WaitForMessageReactionAsync(x => NumberMappingsReverse.ContainsKey(x), msg, ctx.User, TimeSpan.FromSeconds(30)).ConfigureAwait(false);
 
             var res = await interactivity.WaitForMessageAsync(x => x.Author == ctx.User, TimeSpan.FromSeconds(30));
-            if (res == null)
+            if (res.TimedOut || res.Result == null)
             {
                 await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No choice was made.").ConfigureAwait(false);
                 return;
             }
 
-            var resInd = res.Message.Content.Trim();
+            var resInd = res.Result.Content.Trim();
             if (!int.TryParse(resInd, NumberStyles.Integer, CultureInfo.InvariantCulture, out var elInd))
             {
                 if (resInd.ToLowerInvariant() == "cancel")
@@ -383,15 +384,24 @@ namespace Emzi0767.MusicTurret.Modules
             var pages = this.GuildMusic.Queue.Select(x => x.ToTrackString())
                 .Select((s, i) => new { str = s, index = i })
                 .GroupBy(x => x.index / 10)
-                .Select(xg => new Page { Content = $"Now playing: {this.GuildMusic.NowPlaying.ToTrackString()}\n\n{string.Join("\n", xg.Select(xa => $"`{xa.index + 1:00}` {xa.str}"))}\n\n{(this.GuildMusic.RepeatMode == RepeatMode.All ? "The entire queue is repeated.\n\n" : "")}Page {xg.Key + 1}/{pageCount}" });
+                .Select(xg => new Page($"Now playing: {this.GuildMusic.NowPlaying.ToTrackString()}\n\n{string.Join("\n", xg.Select(xa => $"`{xa.index + 1:00}` {xa.str}"))}\n\n{(this.GuildMusic.RepeatMode == RepeatMode.All ? "The entire queue is repeated.\n\n" : "")}Page {xg.Key + 1}/{pageCount}"))
+                .ToArray();
 
             var trk = this.GuildMusic.NowPlaying;
             if (!pages.Any() && trk.Track.TrackString == null) 
-                pages = new List<Page>() { new Page { Content = "Queue is empty!" } };
+                pages = new[] { new Page("Queue is empty!") };
             else if (!pages.Any())
-                pages = new List<Page>() { new Page { Content = $"Now playing: {this.GuildMusic.NowPlaying.ToTrackString()}" } };
+                pages = new[] { new Page($"Now playing: {this.GuildMusic.NowPlaying.ToTrackString()}") };
 
-            await interactivity.SendPaginatedMessage(ctx.Channel, ctx.User, pages, TimeSpan.FromMinutes(2), TimeoutBehaviour.Ignore);
+            var ems = new PaginationEmojis
+            {
+                SkipLeft = null,
+                SkipRight = null,
+                Stop = DiscordEmoji.FromUnicode("⏹"),
+                Left = DiscordEmoji.FromUnicode("◀"),
+                Right = DiscordEmoji.FromUnicode("▶")
+            };
+            await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, ems, PaginationBehaviour.Ignore, PaginationDeletion.KeepEmojis, TimeSpan.FromMinutes(2));
         }
 
         [Command("nowplaying"), Description("Displays information about currently-played track."), Aliases("np")]

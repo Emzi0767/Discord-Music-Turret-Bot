@@ -169,8 +169,6 @@ namespace Emzi0767.MusicTurret
             // create interactivity
             this.Interactivity = this.Discord.UseInteractivity(new InteractivityConfiguration
             {
-                PaginationBehavior = TimeoutBehaviour.Ignore,
-                PaginationTimeout = TimeSpan.FromMinutes(2.5),
                 Timeout = TimeSpan.FromSeconds(30)
             });
 
