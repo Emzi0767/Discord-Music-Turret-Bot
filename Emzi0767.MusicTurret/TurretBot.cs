@@ -307,7 +307,7 @@ namespace Emzi0767.MusicTurret
         private async Task CommandsNext_CommandErrored(CommandErrorEventArgs e)
         {
             e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, LOG_TAG,
-                $"User '{e.Context.User.Username}#{e.Context.User.Discriminator}' ({e.Context.User.Id}) tried to execute '{e.Command?.QualifiedName ?? "<unknown command>"}'"
+                $"User '{e.Context.User.Username}#{e.Context.User.Discriminator}' ({e.Context.User.Id}) tried to execute '{e.Command?.QualifiedName ?? "<unknown command>"}' "
                 + $"in #{e.Context.Channel.Name} ({e.Context.Channel.Id}) and failed with {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
             DiscordEmbedBuilder embed = null;
 
