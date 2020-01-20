@@ -21,25 +21,28 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <Version>1.4.1</Version>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Version>1.5.0</Version>
     <AssemblyVersion>$(Version).0</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <AssemblyTitle>Music Turret Discord Bot</AssemblyTitle>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <DebugType>Portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00616" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00616" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00616" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00616" />
-    <PackageReference Include="Humanizer.Core" Version="2.6.2" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00656" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00656" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00656" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00656" />
+    <PackageReference Include="Humanizer.Core" Version="2.7.9" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
   </ItemGroup>
 

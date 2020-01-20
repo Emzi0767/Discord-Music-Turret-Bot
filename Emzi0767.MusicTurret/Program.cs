@@ -56,7 +56,7 @@ namespace Emzi0767.MusicTurret
 
             // load the config file and validate it
             var cfgLoader = new TurretConfigLoader();
-            var cfg = await cfgLoader.LoadConfigurationAsync(cfgFile).ConfigureAwait(false);
+            var cfg = await cfgLoader.LoadConfigurationAsync(cfgFile);
             cfgLoader.ValidateConfiguration(cfg);
 
             // create database type mapping
@@ -78,7 +78,7 @@ namespace Emzi0767.MusicTurret
             for (int i = 0; i < cfg.Discord.ShardCount; i++)
             {
                 var shard = new TurretBot(cfg, i, async);
-                await shard.StartAsync().ConfigureAwait(false);
+                await shard.StartAsync();
 
                 Shards[i] = shard;
             }

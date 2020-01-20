@@ -81,32 +81,32 @@ namespace Emzi0767.MusicTurret.Modules
             var chn = vs.Channel;
             if (chn == null)
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in a voice channel.");
                 throw new CommandCancelledException();
             }
 
             var mbr = ctx.Guild.CurrentMember?.VoiceState?.Channel;
             if (mbr != null && chn != mbr)
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} You need to be in the same voice channel.");
                 throw new CommandCancelledException();
             }
 
-            this.GuildMusic = await this.Music.GetOrCreateDataAsync(ctx.Guild).ConfigureAwait(false);
+            this.GuildMusic = await this.Music.GetOrCreateDataAsync(ctx.Guild);
             this.GuildMusic.CommandChannel = ctx.Channel;
 
-            await base.BeforeExecutionAsync(ctx).ConfigureAwait(false);
+            await base.BeforeExecutionAsync(ctx);
         }
 
         [Command("play"), Description("Plays supplied URL or searches for specified keywords."), Aliases("p"), Priority(1)]
         public async Task PlayAsync(CommandContext ctx, 
             [Description("URL to play from.")] Uri uri)
         {
-            var trackLoad = await this.Music.GetTracksAsync(uri).ConfigureAwait(false);
+            var trackLoad = await this.Music.GetTracksAsync(uri);
             var tracks = trackLoad.Tracks;
             if (trackLoad.LoadResultType == LavalinkLoadResultType.LoadFailed || !tracks.Any())
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.");
                 return;
             }
 
@@ -126,15 +126,15 @@ namespace Emzi0767.MusicTurret.Modules
 
             var vs = ctx.Member.VoiceState;
             var chn = vs.Channel;
-            await this.GuildMusic.CreatePlayerAsync(chn).ConfigureAwait(false);
+            await this.GuildMusic.CreatePlayerAsync(chn);
             this.GuildMusic.Play();
 
             if (trackCount > 1)
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {trackCount:#,##0} tracks to playback queue.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {trackCount:#,##0} tracks to playback queue.");
             else
             {
                 var track = tracks.First();
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))} to the playback queue.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))} to the playback queue.");
             }
         }
 
@@ -144,25 +144,25 @@ namespace Emzi0767.MusicTurret.Modules
         {
             var interactivity = ctx.Client.GetInteractivity();
 
-            var results = await this.YouTube.SearchAsync(term).ConfigureAwait(false);
+            var results = await this.YouTube.SearchAsync(term);
             if (!results.Any())
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} Nothing was found.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} Nothing was found.");
                 return;
             }
 
             var msgC = string.Join("\n", results.Select((x, i) => $"{NumberMappings[i + 1]} {Formatter.Bold(Formatter.Sanitize(x.Title))} by {Formatter.Bold(Formatter.Sanitize(x.Author))}"));
             msgC = $"{msgC}\n\nType a number 1-{results.Count()} to queue a track. To cancel, type cancel or {Numbers.Last()}.";
-            var msg = await ctx.RespondAsync(msgC).ConfigureAwait(false);
+            var msg = await ctx.RespondAsync(msgC);
 
             //foreach (var emoji in Numbers)
-            //    await msg.CreateReactionAsync(emoji).ConfigureAwait(false);
-            //var res = await interactivity.WaitForMessageReactionAsync(x => NumberMappingsReverse.ContainsKey(x), msg, ctx.User, TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+            //    await msg.CreateReactionAsync(emoji);
+            //var res = await interactivity.WaitForMessageReactionAsync(x => NumberMappingsReverse.ContainsKey(x), msg, ctx.User, TimeSpan.FromSeconds(30));
 
             var res = await interactivity.WaitForMessageAsync(x => x.Author == ctx.User, TimeSpan.FromSeconds(30));
             if (res.TimedOut || res.Result == null)
             {
-                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No choice was made.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No choice was made.");
                 return;
             }
 
@@ -178,7 +178,7 @@ namespace Emzi0767.MusicTurret.Modules
                     var em = DiscordEmoji.FromUnicode(resInd);
                     if (!NumberMappingsReverse.ContainsKey(em))
                     {
-                        await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid choice was made.").ConfigureAwait(false);
+                        await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid choice was made.");
                         return;
                     }
 
@@ -187,31 +187,31 @@ namespace Emzi0767.MusicTurret.Modules
             }
             else if (elInd < 1)
             {
-                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid choice was made.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid choice was made.");
                 return;
             }
 
             if (!NumberMappings.ContainsKey(elInd))
             {
-                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid choice was made.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid choice was made.");
                 return;
             }
 
             //var elInd = NumberMappingsReverse[res.Emoji];
             if (elInd == -1)
             {
-                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Choice cancelled.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Choice cancelled.");
                 return;
             }
             
             var el = results.ElementAt(elInd - 1);
             var url = new Uri($"https://youtu.be/{el.Id}");
 
-            var trackLoad = await this.Music.GetTracksAsync(url).ConfigureAwait(false);
+            var trackLoad = await this.Music.GetTracksAsync(url);
             var tracks = trackLoad.Tracks;
             if (trackLoad.LoadResultType == LavalinkLoadResultType.LoadFailed || !tracks.Any())
             {
-                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msfrown:")} No tracks were found at specified link.");
                 return;
             }
 
@@ -223,17 +223,17 @@ namespace Emzi0767.MusicTurret.Modules
 
             var vs = ctx.Member.VoiceState;
             var chn = vs.Channel;
-            await this.GuildMusic.CreatePlayerAsync(chn).ConfigureAwait(false);
+            await this.GuildMusic.CreatePlayerAsync(chn);
             this.GuildMusic.Play();
 
             if (trackCount > 1)
             {
-                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {trackCount:#,##0} tracks to playback queue.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {trackCount:#,##0} tracks to playback queue.");
             }
             else
             {
                 var track = tracks.First();
-                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))} to the playback queue.").ConfigureAwait(false);
+                await msg.ModifyAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))} to the playback queue.");
             }
         }
 
@@ -242,23 +242,23 @@ namespace Emzi0767.MusicTurret.Modules
         {
             int rmd = this.GuildMusic.EmptyQueue();
             this.GuildMusic.Stop();
-            await this.GuildMusic.DestroyPlayerAsync().ConfigureAwait(false);
+            await this.GuildMusic.DestroyPlayerAsync();
 
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Removed {rmd:#,##0} tracks from the queue.").ConfigureAwait(false);
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Removed {rmd:#,##0} tracks from the queue.");
         }
 
         [Command("pause"), Description("Pauses playback.")]
         public async Task PauseAsync(CommandContext ctx)
         {
             this.GuildMusic.Pause();
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Playback paused. Use {Formatter.InlineCode($"{ctx.Prefix}resume")} to resume playback.").ConfigureAwait(false);
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Playback paused. Use {Formatter.InlineCode($"{ctx.Prefix}resume")} to resume playback.");
         }
 
         [Command("resume"), Description("Resumes playback."), Aliases("unpause")]
         public async Task ResumeAsync(CommandContext ctx)
         {
             this.GuildMusic.Resume();
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Playback resumed.").ConfigureAwait(false);
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Playback resumed.");
         }
 
         [Command("skip"), Description("Skips current track."), Aliases("next")]
@@ -266,7 +266,7 @@ namespace Emzi0767.MusicTurret.Modules
         {
             var track = this.GuildMusic.NowPlaying;
             this.GuildMusic.Stop();
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} skipped.").ConfigureAwait(false);
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} skipped.");
         }
 
         [Command("seek"), Description("Seeks to specified time in current track.")]
@@ -299,12 +299,12 @@ namespace Emzi0767.MusicTurret.Modules
         {
             if (volume < 0 || volume > 150)
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Volume must be greater than 0, and less than or equal to 150.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Volume must be greater than 0, and less than or equal to 150.");
                 return;
             }
 
             this.GuildMusic.SetVolume(volume);
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Volume set to {volume}%.").ConfigureAwait(false);
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Volume set to {volume}%.");
         }
 
         [Command("restart"), Description("Restarts the playback of the current track.")]
@@ -312,7 +312,7 @@ namespace Emzi0767.MusicTurret.Modules
         {
             var track = this.GuildMusic.NowPlaying;
             this.GuildMusic.Restart();
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} restarted.").ConfigureAwait(false);
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} restarted.");
         }
 
         [Command("repeat"), Description("Changes repeat mode of the queue."), Aliases("loop")]
@@ -322,12 +322,12 @@ namespace Emzi0767.MusicTurret.Modules
             var rmc = new RepeatModeConverter();
             if (!rmc.TryFromString(mode, out var rm))
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid repeat mode specified.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Invalid repeat mode specified.");
                 return;
             }
 
             this.GuildMusic.SetRepeatMode(rm);
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Repeat mode set to {rm}.").ConfigureAwait(false);
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Repeat mode set to {rm}.");
         }
 
         [Command("shuffle"), Description("Toggles shuffle mode.")]
@@ -336,12 +336,12 @@ namespace Emzi0767.MusicTurret.Modules
             if (this.GuildMusic.IsShuffled)
             {
                 this.GuildMusic.StopShuffle();
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Queue is no longer shuffled.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Queue is no longer shuffled.");
             }
             else
             {
                 this.GuildMusic.Shuffle();
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Queue is now shuffled.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Queue is now shuffled.");
             }
         }
 
@@ -349,7 +349,7 @@ namespace Emzi0767.MusicTurret.Modules
         public async Task ReshuffleAsync(CommandContext ctx)
         {
             this.GuildMusic.Reshuffle();
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Queue reshuffled.").ConfigureAwait(false);
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Queue reshuffled.");
         }
 
         [Command("remove"), Description("Removes a track from playback queue."), Aliases("del", "rm")]
@@ -359,12 +359,12 @@ namespace Emzi0767.MusicTurret.Modules
             var itemN = this.GuildMusic.Remove(index - 1);
             if (itemN == null)
             {
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} No such track.").ConfigureAwait(false);
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} No such track.");
                 return;
             }
 
             var track = itemN.Value;
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} removed.").ConfigureAwait(false);
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} removed.");
         }
 
         [Command("queue"), Description("Displays current playback queue."), Aliases("q")]
@@ -375,7 +375,7 @@ namespace Emzi0767.MusicTurret.Modules
             if (this.GuildMusic.RepeatMode == RepeatMode.Single)
             {
                 var track = this.GuildMusic.NowPlaying;
-                await ctx.RespondAsync($"Queue repeats {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))}.").ConfigureAwait(false);
+                await ctx.RespondAsync($"Queue repeats {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))}.");
                 return;
             }
 
@@ -410,18 +410,18 @@ namespace Emzi0767.MusicTurret.Modules
             var track = this.GuildMusic.NowPlaying;
             if (this.GuildMusic.NowPlaying.Track.TrackString == null)
             {
-                await ctx.RespondAsync($"Not playing.").ConfigureAwait(false);
+                await ctx.RespondAsync($"Not playing.");
             }
             else
             {
-                await ctx.RespondAsync($"Now playing: {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} [{this.GuildMusic.GetCurrentPosition().ToDurationString()}/{this.GuildMusic.NowPlaying.Track.Length.ToDurationString()}] requested by {Formatter.Bold(Formatter.Sanitize(this.GuildMusic.NowPlaying.RequestedBy.DisplayName))}.").ConfigureAwait(false);
+                await ctx.RespondAsync($"Now playing: {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} [{this.GuildMusic.GetCurrentPosition().ToDurationString()}/{this.GuildMusic.NowPlaying.Track.Length.ToDurationString()}] requested by {Formatter.Bold(Formatter.Sanitize(this.GuildMusic.NowPlaying.RequestedBy.DisplayName))}.");
             }
         }
 
         [Command("playerinfo"), Description("Displays information about current player."), Aliases("pinfo", "pinf"), Hidden]
         public async Task PlayerInfoAsync(CommandContext ctx)
         {
-            await ctx.RespondAsync($"Queue length: {this.GuildMusic.Queue.Count}\nIs shuffled? {(this.GuildMusic.IsShuffled ? "Yes" : "No")}\nRepeat mode: {this.GuildMusic.RepeatMode}\nVolume: {this.GuildMusic.Volume}%").ConfigureAwait(false);
+            await ctx.RespondAsync($"Queue length: {this.GuildMusic.Queue.Count}\nIs shuffled? {(this.GuildMusic.IsShuffled ? "Yes" : "No")}\nRepeat mode: {this.GuildMusic.RepeatMode}\nVolume: {this.GuildMusic.Volume}%");
         }
     }
 }

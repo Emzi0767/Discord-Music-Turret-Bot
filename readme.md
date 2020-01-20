@@ -8,7 +8,7 @@ instance is not available for public use. Feel free to self-host, however.
 ## Requirements
 In order to run the bot you will need to have the following components 
 installed and available on your system:
-- .NET Core 2.1 runtime
+- .NET Core 3.0 runtime
 - Java 8 or better
 - PostgreSQL server 9.6 or better
 - Redis server
@@ -18,24 +18,24 @@ The bot was designed for UNIX-like environments, and is not guaranteed to work
 under Windows.
 
 ## Building
-The bot requires that you have .NET Core 2.1 SDK, and preferably Visual Studio 
-2017 installed and available on your system.
+The bot requires that you have .NET Core 3.0 SDK, and preferably Visual Studio 
+2019 installed and available on your system.
 
 The required NuGet configurations are available in solution's root directory, 
 so no further NuGet configuration should be required. Should that happen to not 
 be the case, however, add the following MyGet feed to your NuGet sources:
-`https://www.myget.org/F/dsharpplus-nightly/api/v3/index.json`
+`https://nuget.emzi0767.com/api/v3/index.json`
 
-### Visual Studio 2017
+### Visual Studio 2019
 Just open the solution and hit build, then publish. This will create a complete 
-bot distribution in `bin/Release/netcoreapp2.1/publish/`.
+bot distribution in `bin/Release/netcoreapp3.0/publish/`.
 
 ### .NET Core SDK command line
 Navigate to where the solution is located. From there you need to restore 
 packages, build, and publish:
 - `dotnet restore`
 - `dotnet build -c Release`
-- `dotnet publish -c Release -f netcoreapp2.1 -r linux-x64`
+- `dotnet publish -c Release -f netcoreapp3.0 -r linux-x64`
 
 ## Setting up
 If you have all the required components installed, you need to properly set 

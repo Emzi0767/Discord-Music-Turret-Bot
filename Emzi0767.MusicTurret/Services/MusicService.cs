@@ -72,7 +72,7 @@ namespace Emzi0767.MusicTurret.Services
                 return gmd;
 
             gmd = this.MusicData.AddOrUpdate(guild.Id, new GuildMusicData(guild, this.RNG, this.Lavalink, this.Redis), (k, v) => v);
-            await gmd.LoadAsync().ConfigureAwait(false);
+            await gmd.LoadAsync();
 
             return gmd;
         }
@@ -83,7 +83,7 @@ namespace Emzi0767.MusicTurret.Services
         /// <param name="uri">URL to load tracks from.</param>
         /// <returns>Loaded tracks.</returns>
         public Task<LavalinkLoadResult> GetTracksAsync(Uri uri)
-            => this.Lavalink.LavalinkNode.GetTracksAsync(uri);
+            => this.Lavalink.LavalinkNode.Rest.GetTracksAsync(uri);
 
         /// <summary>
         /// Shuffles the supplied track list.

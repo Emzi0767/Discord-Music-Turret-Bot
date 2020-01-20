@@ -115,10 +115,10 @@ namespace Emzi0767.MusicTurret.Data
                 this.QueueSerialized = JsonConvert.SerializeObject(this.QueueInternal.Select(x => new MusicItemSerializable(x)));
             }
 
-            await this.Redis.SetValueForAsync(this, x => x.RepeatMode).ConfigureAwait(false);
-            await this.Redis.SetValueForAsync(this, x => x.IsShuffled).ConfigureAwait(false);
-            await this.Redis.SetValueForAsync(this, x => x.Volume).ConfigureAwait(false);
-            await this.Redis.SetValueForAsync(this, x => x.QueueSerialized).ConfigureAwait(false);
+            await this.Redis.SetValueForAsync(this, x => x.RepeatMode);
+            await this.Redis.SetValueForAsync(this, x => x.IsShuffled);
+            await this.Redis.SetValueForAsync(this, x => x.Volume);
+            await this.Redis.SetValueForAsync(this, x => x.QueueSerialized);
 
             this.QueueSerialized = null;
         }
@@ -129,15 +129,15 @@ namespace Emzi0767.MusicTurret.Data
         /// <returns></returns>
         internal async Task LoadAsync()
         {
-            await this.Redis.GetValueForAsync(this, x => x.RepeatMode, this.RepeatMode).ConfigureAwait(false);
-            await this.Redis.GetValueForAsync(this, x => x.IsShuffled, this.IsShuffled).ConfigureAwait(false);
-            await this.Redis.GetValueForAsync(this, x => x.Volume, this.Volume).ConfigureAwait(false);
-            await this.Redis.GetValueForAsync(this, x => x.QueueSerialized, "[]").ConfigureAwait(false);
+            await this.Redis.GetValueForAsync(this, x => x.RepeatMode, this.RepeatMode);
+            await this.Redis.GetValueForAsync(this, x => x.IsShuffled, this.IsShuffled);
+            await this.Redis.GetValueForAsync(this, x => x.Volume, this.Volume);
+            await this.Redis.GetValueForAsync(this, x => x.QueueSerialized, "[]");
 
             var rawQueue = JsonConvert.DeserializeObject<IEnumerable<MusicItemSerializable>>(this.QueueSerialized);
             this.QueueSerialized = null;
 
-            var mbrs = await Task.WhenAll(rawQueue.Select(x => x.MemberId).Distinct().Select(x => this.Guild.GetMemberAsync(x))).ConfigureAwait(false);
+            var mbrs = await Task.WhenAll(rawQueue.Select(x => x.MemberId).Distinct().Select(x => this.Guild.GetMemberAsync(x)));
             var members = mbrs.ToDictionary(x => x.Id, x => x);
 
             lock (this.QueueInternal)
@@ -400,7 +400,7 @@ namespace Emzi0767.MusicTurret.Data
             if (this.Player != null && this.Player.IsConnected)
                 return;
 
-            this.Player = await this.Lavalink.LavalinkNode.ConnectAsync(channel).ConfigureAwait(false);
+            this.Player = await this.Lavalink.LavalinkNode.ConnectAsync(channel);
             if (this.Volume != 100)
                 this.Player.SetVolume(this.Volume);
             this.Player.PlaybackFinished += this.Player_PlaybackFinished;
@@ -436,7 +436,7 @@ namespace Emzi0767.MusicTurret.Data
 
         private async Task Player_PlaybackFinished(TrackFinishEventArgs e)
         {
-            await Task.Delay(500).ConfigureAwait(false);
+            await Task.Delay(500);
             this.IsPlaying = false;
             this.PlayHandler();
 

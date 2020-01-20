@@ -77,7 +77,7 @@ namespace Emzi0767.MusicTurret.Services
 
             // construct the key and get its value
             var key = $"{obj.Identifier}:{prop.Name}";
-            var val = await this.Database.StringGetAsync(key).ConfigureAwait(false);
+            var val = await this.Database.StringGetAsync(key);
 
             // set the property value
             var t = typeof(TProp);
@@ -118,7 +118,7 @@ namespace Emzi0767.MusicTurret.Services
 
             // construct the key and set its value
             var key = $"{obj.Identifier}:{prop.Name}";
-            await this.Database.StringSetAsync(key, cvval).ConfigureAwait(false);
+            await this.Database.StringSetAsync(key, cvval);
         }
     }
 }

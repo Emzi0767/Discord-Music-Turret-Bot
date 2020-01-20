@@ -279,7 +279,7 @@ namespace Emzi0767.MusicTurret
                 return;
 
             var music = this.Services.GetService<MusicService>();
-            var gmd = await music.GetOrCreateDataAsync(e.Guild).ConfigureAwait(false);
+            var gmd = await music.GetOrCreateDataAsync(e.Guild);
             var chn = gmd.Channel;
             if (chn == null || chn != e.Before.Channel)
                 return;
@@ -289,7 +289,7 @@ namespace Emzi0767.MusicTurret
             {
                 e.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, $"All users left voice in {e.Guild.Name}, pausing playback", DateTime.Now);
                 gmd.Pause();
-                await gmd.SaveAsync().ConfigureAwait(false);
+                await gmd.SaveAsync();
                 
                 if (gmd.CommandChannel != null)
                     await gmd.CommandChannel.SendMessageAsync($"{DiscordEmoji.FromName(e.Client, ":play_pause:")} All users left the channel, playback paused. You can resume it by joining the channel and using the `resume` command.");
@@ -340,7 +340,7 @@ namespace Emzi0767.MusicTurret
             }
 
             if (embed != null)
-                await e.Context.RespondAsync("", embed: embed.Build()).ConfigureAwait(false);
+                await e.Context.RespondAsync("", embed: embed.Build());
         }
 
         private Task<int> ResolvePrefixAsync(DiscordMessage msg)

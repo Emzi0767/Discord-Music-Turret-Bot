@@ -83,7 +83,7 @@ namespace Emzi0767.MusicTurret.Modules
                 .AddField("DSharpPlus Version", $"{DiscordEmoji.FromName(ctx.Client, ":dsharpplus:")} {Formatter.Bold(dsv)}", true)
                 .AddField(".NET Core Version", $"{DiscordEmoji.FromName(ctx.Client, ":dotnet:")} {Formatter.Bold(ncv)}", true);
 
-            await ctx.RespondAsync("", embed: embed.Build()).ConfigureAwait(false);
+            await ctx.RespondAsync("", embed: embed.Build());
         }
 
         [Command("uptime"), Description("Display bot's uptime."), Hidden]
@@ -91,13 +91,13 @@ namespace Emzi0767.MusicTurret.Modules
         {
             var upt = DateTime.Now - Process.GetCurrentProcess().StartTime;
             var ups = upt.Humanize(2);
-            await ctx.RespondAsync(string.Concat("\u200b", DiscordEmoji.FromName(ctx.Client, ":turret:"), " The bot has been running for ", Formatter.Bold(ups), ".")).ConfigureAwait(false);
+            await ctx.RespondAsync(string.Concat("\u200b", DiscordEmoji.FromName(ctx.Client, ":turret:"), " The bot has been running for ", Formatter.Bold(ups), "."));
         }
 
         [Command("ping"), Description("Displays this shard's WebSocket latency."), Hidden]
         public async Task PingAsync(CommandContext ctx)
         {
-            await ctx.RespondAsync(string.Concat("\u200b", DiscordEmoji.FromName(ctx.Client, ":ping_pong:"), " WebSocket latency: ", ctx.Client.Ping.ToString("#,##0"), "ms.")).ConfigureAwait(false);
+            await ctx.RespondAsync(string.Concat("\u200b", DiscordEmoji.FromName(ctx.Client, ":ping_pong:"), " WebSocket latency: ", ctx.Client.Ping.ToString("#,##0"), "ms."));
         }
 
         [Command("cleanup"), Hidden]
@@ -106,7 +106,7 @@ namespace Emzi0767.MusicTurret.Modules
             var lid = 0ul;
             for (var i = 0; i < maxCount; i += 100)
             {
-                var msgs = await ctx.Channel.GetMessagesBeforeAsync(lid != 0 ? lid : ctx.Message.Id, Math.Min(maxCount - i, 100)).ConfigureAwait(false);
+                var msgs = await ctx.Channel.GetMessagesBeforeAsync(lid != 0 ? lid : ctx.Message.Id, Math.Min(maxCount - i, 100));
                 var msgsf = msgs.Where(xm => xm.Author.Id == ctx.Client.CurrentUser.Id).OrderBy(xm => xm.Id);
 
                 var lmsg = msgsf.FirstOrDefault();
@@ -117,7 +117,7 @@ namespace Emzi0767.MusicTurret.Modules
 
                 try
                 {
-                    await ctx.Channel.DeleteMessagesAsync(msgsf).ConfigureAwait(false);
+                    await ctx.Channel.DeleteMessagesAsync(msgsf);
                 }
                 catch (UnauthorizedException)
                 {
@@ -126,7 +126,7 @@ namespace Emzi0767.MusicTurret.Modules
                 }
             }
 
-            var msg = await ctx.RespondAsync(DiscordEmoji.FromName(ctx.Client, ":msokhand:").ToString()).ConfigureAwait(false);
+            var msg = await ctx.RespondAsync(DiscordEmoji.FromName(ctx.Client, ":msokhand:").ToString());
             await Task.Delay(2500).ContinueWith(t => msg.DeleteAsync());
         }
     }

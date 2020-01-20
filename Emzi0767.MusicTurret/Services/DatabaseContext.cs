@@ -69,7 +69,7 @@ namespace Emzi0767.MusicTurret.Services
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ForNpgsqlHasEnum(null, "entity_kind", new[] { "user", "channel", "guild" });
+            modelBuilder.HasPostgresEnum<DatabaseEntityKind>();
 
             modelBuilder.Entity<DatabaseMetadata>(entity =>
             {

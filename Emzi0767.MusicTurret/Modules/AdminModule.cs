@@ -64,8 +64,8 @@ namespace Emzi0767.MusicTurret.Modules
                 this.Database.EntityBlacklist.Remove(block);
             }
 
-            await this.Database.SaveChangesAsync().ConfigureAwait(false);
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} User {user.Mention} is {(blacklisted ? "now blacklisted" : "no longer blacklisted")}.").ConfigureAwait(false);
+            await this.Database.SaveChangesAsync();
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} User {user.Mention} is {(blacklisted ? "now blacklisted" : "no longer blacklisted")}.");
         }
 
         [Command("blacklist")]
@@ -92,8 +92,8 @@ namespace Emzi0767.MusicTurret.Modules
                 this.Database.EntityBlacklist.Remove(block);
             }
 
-            await this.Database.SaveChangesAsync().ConfigureAwait(false);
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Channel {channel.Mention} is {(blacklisted ? "now blacklisted" : "no longer blacklisted")}.").ConfigureAwait(false);
+            await this.Database.SaveChangesAsync();
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Channel {channel.Mention} is {(blacklisted ? "now blacklisted" : "no longer blacklisted")}.");
         }
 
         [Command("blacklist")]
@@ -120,8 +120,8 @@ namespace Emzi0767.MusicTurret.Modules
                 this.Database.EntityBlacklist.Remove(block);
             }
 
-            await this.Database.SaveChangesAsync().ConfigureAwait(false);
-            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Guild {Formatter.Bold(Formatter.Sanitize(guild.Name))} is {(blacklisted ? "now blacklisted" : "no longer blacklisted")}.").ConfigureAwait(false);
+            await this.Database.SaveChangesAsync();
+            await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Guild {Formatter.Bold(Formatter.Sanitize(guild.Name))} is {(blacklisted ? "now blacklisted" : "no longer blacklisted")}.");
         }
 
         [Command("blacklist")]
@@ -132,7 +132,7 @@ namespace Emzi0767.MusicTurret.Modules
             foreach (var x in this.Database.EntityBlacklist)
                 sb.Append($"{(ulong)x.Id} ({x.Kind}, since {x.Since:yyyy-MM-dd HH:mm:ss zzz}): {(string.IsNullOrWhiteSpace(x.Reason) ? "no reason specified" : x.Reason)}\n");
 
-            await ctx.RespondAsync(sb.ToString()).ConfigureAwait(false);
+            await ctx.RespondAsync(sb.ToString());
         }
 
         [Group("prefix"), ModuleLifespan(ModuleLifespan.Transient), Description("Commands for managing the prefixes that trigger the bot's commands."), Aliases("pfx")]
@@ -189,7 +189,7 @@ namespace Emzi0767.MusicTurret.Modules
                     }
                 }
 
-                await ctx.RespondAsync(sb.ToString()).ConfigureAwait(false);
+                await ctx.RespondAsync(sb.ToString());
             }
 
             [Command("add"), Description("Adds a prefix to this guild's command prefixes.")]
@@ -201,7 +201,7 @@ namespace Emzi0767.MusicTurret.Modules
 
                 if (gpfx?.EnableDefault != false && this.Bot.Configuration.Discord.DefaultPrefixes.Contains(prefix))
                 {
-                    await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Cannot add default prefix.").ConfigureAwait(false);
+                    await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} Cannot add default prefix.");
                     return;
                 }
 
@@ -221,8 +221,8 @@ namespace Emzi0767.MusicTurret.Modules
                     this.Database.Prefixes.Update(gpfx);
                 }
 
-                await this.Database.SaveChangesAsync().ConfigureAwait(false);
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Prefix added.").ConfigureAwait(false);
+                await this.Database.SaveChangesAsync();
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Prefix added.");
             }
 
             [Command("remove"), Description("Removes a prefix from this guild's command prefixes."), Aliases("rm", "delete", "del")]
@@ -238,12 +238,12 @@ namespace Emzi0767.MusicTurret.Modules
                 }
                 else if (gpfx != null && !gpfx.Prefixes.Contains(prefix))
                 {
-                    await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} This prefix is not configured.").ConfigureAwait(false);
+                    await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msraisedhand:")} This prefix is not configured.");
                     return;
                 }
 
-                await this.Database.SaveChangesAsync().ConfigureAwait(false);
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Prefix removed.").ConfigureAwait(false);
+                await this.Database.SaveChangesAsync();
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Prefix removed.");
             }
 
             [Command("enabledefault"), Description("Configures whether default prefixes are to be enabled in this guild."), Aliases("default", "def")]
@@ -268,8 +268,8 @@ namespace Emzi0767.MusicTurret.Modules
                     this.Database.Prefixes.Update(gpfx);
                 }
 
-                await this.Database.SaveChangesAsync().ConfigureAwait(false);
-                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Setting saved.").ConfigureAwait(false);
+                await this.Database.SaveChangesAsync();
+                await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Setting saved.");
             }
         }
     }
