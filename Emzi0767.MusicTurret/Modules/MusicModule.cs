@@ -127,7 +127,7 @@ namespace Emzi0767.MusicTurret.Modules
             var vs = ctx.Member.VoiceState;
             var chn = vs.Channel;
             await this.GuildMusic.CreatePlayerAsync(chn);
-            this.GuildMusic.Play();
+            await this.GuildMusic.PlayAsync();
 
             if (trackCount > 1)
                 await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Added {trackCount:#,##0} tracks to playback queue.");
@@ -224,7 +224,7 @@ namespace Emzi0767.MusicTurret.Modules
             var vs = ctx.Member.VoiceState;
             var chn = vs.Channel;
             await this.GuildMusic.CreatePlayerAsync(chn);
-            this.GuildMusic.Play();
+            await this.GuildMusic.PlayAsync();
 
             if (trackCount > 1)
             {
@@ -241,7 +241,7 @@ namespace Emzi0767.MusicTurret.Modules
         public async Task StopAsync(CommandContext ctx)
         {
             int rmd = this.GuildMusic.EmptyQueue();
-            this.GuildMusic.Stop();
+            await this.GuildMusic.StopAsync();
             await this.GuildMusic.DestroyPlayerAsync();
 
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Removed {rmd:#,##0} tracks from the queue.");
@@ -250,14 +250,14 @@ namespace Emzi0767.MusicTurret.Modules
         [Command("pause"), Description("Pauses playback.")]
         public async Task PauseAsync(CommandContext ctx)
         {
-            this.GuildMusic.Pause();
+            await this.GuildMusic.PauseAsync();
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Playback paused. Use {Formatter.InlineCode($"{ctx.Prefix}resume")} to resume playback.");
         }
 
         [Command("resume"), Description("Resumes playback."), Aliases("unpause")]
         public async Task ResumeAsync(CommandContext ctx)
         {
-            this.GuildMusic.Resume();
+            await this.GuildMusic.ResumeAsync();
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Playback resumed.");
         }
 
@@ -265,32 +265,29 @@ namespace Emzi0767.MusicTurret.Modules
         public async Task SkipAsync(CommandContext ctx)
         {
             var track = this.GuildMusic.NowPlaying;
-            this.GuildMusic.Stop();
+            await this.GuildMusic.StopAsync();
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} skipped.");
         }
 
         [Command("seek"), Description("Seeks to specified time in current track.")]
-        public Task SeekAsync(CommandContext ctx,
+        public async Task SeekAsync(CommandContext ctx,
             [RemainingText, Description("Which time point to seek to.")] TimeSpan position)
         {
-            this.GuildMusic.Seek(position, false);
-            return Task.CompletedTask;
+            await this.GuildMusic.SeekAsync(position, false);
         }
 
         [Command("forward"), Description("Forwards the track by specified amount of time.")]
-        public Task ForwardAsync(CommandContext ctx,
+        public async Task ForwardAsync(CommandContext ctx,
             [RemainingText, Description("By how much to forward.")] TimeSpan offset)
         {
-            this.GuildMusic.Seek(offset, true);
-            return Task.CompletedTask;
+            await this.GuildMusic.SeekAsync(offset, true);
         }
 
         [Command("rewind"), Description("Rewinds the track by specified amount of time.")]
-        public Task RewindAsync(CommandContext ctx,
+        public async Task RewindAsync(CommandContext ctx,
             [RemainingText, Description("By how much to rewind.")] TimeSpan offset)
         {
-            this.GuildMusic.Seek(-offset, true);
-            return Task.CompletedTask;
+            await this.GuildMusic.SeekAsync(-offset, true);
         }
 
         [Command("volume"), Description("Sets playback volume."), Aliases("v")]
@@ -303,7 +300,7 @@ namespace Emzi0767.MusicTurret.Modules
                 return;
             }
 
-            this.GuildMusic.SetVolume(volume);
+            await this.GuildMusic.SetVolumeAsync(volume);
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} Volume set to {volume}%.");
         }
 
@@ -311,7 +308,7 @@ namespace Emzi0767.MusicTurret.Modules
         public async Task RestartAsync(CommandContext ctx)
         {
             var track = this.GuildMusic.NowPlaying;
-            this.GuildMusic.Restart();
+            await this.GuildMusic.RestartAsync();
             await ctx.RespondAsync($"{DiscordEmoji.FromName(ctx.Client, ":msokhand:")} {Formatter.Bold(Formatter.Sanitize(track.Track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Track.Author))} restarted.");
         }
 

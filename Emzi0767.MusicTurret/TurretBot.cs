@@ -288,7 +288,7 @@ namespace Emzi0767.MusicTurret
             if (gmd.IsPlaying && usrs.Count() == 1 && usrs.First() == this.Discord.CurrentUser)
             {
                 e.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, $"All users left voice in {e.Guild.Name}, pausing playback", DateTime.Now);
-                gmd.Pause();
+                await gmd.PauseAsync();
                 await gmd.SaveAsync();
                 
                 if (gmd.CommandChannel != null)
