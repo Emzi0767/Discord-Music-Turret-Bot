@@ -67,16 +67,14 @@ namespace Emzi0767.MusicTurret.Modules
             }
             catch { }
 
-            var invuri = string.Concat("https://discordapp.com/oauth2/authorize?scope=bot&permissions=0&client_id=", ctx.Client.CurrentApplication.Id);
-
             var embed = new DiscordEmbedBuilder
             {
-                Title = "About Companion Cube",
-                Url = "https://emzi0767.com/Discord/CompanionCube",
+                Title = "About Music Turret",
+                Url = "https://emzi0767.com/#!/discord/music-turret",
                 Description = $"Music Turret is a bot made by Emzi0767#1837 (<@!181875147148361728>). The source code is available on "
                               + $"{Formatter.MaskedUrl("Emzi's GitHub", new Uri("https://github.com/Emzi0767/Discord-Music-Turret-Bot"), " Music Turret's source code on GitHub")}."
                               + $"\n\nThis shard is currently servicing {ctx.Client.Guilds.Count.ToString("#,##0")} guilds.",
-                Color = new DiscordColor(0xD091B2)
+                Color = new DiscordColor(0xFFFFFF)
             };
 
             embed.AddField("Bot Version", $"{DiscordEmoji.FromName(ctx.Client, ":turret:")} {Formatter.Bold(ccv)}", true)
