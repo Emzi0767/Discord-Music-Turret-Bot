@@ -74,7 +74,7 @@ namespace Emzi0767.MusicTurret.Modules
                 Description = $"Music Turret is a bot made by Emzi0767#1837 (<@!181875147148361728>). The source code is available on "
                               + $"{Formatter.MaskedUrl("Emzi's GitHub", new Uri("https://github.com/Emzi0767/Discord-Music-Turret-Bot"), " Music Turret's source code on GitHub")}."
                               + $"\n\nThis shard is currently servicing {ctx.Client.Guilds.Count.ToString("#,##0")} guilds.",
-                Color = new DiscordColor(0xFFFFFF)
+                Color = new DiscordColor(0xFEFEFE)
             };
 
             embed.AddField("Bot Version", $"{DiscordEmoji.FromName(ctx.Client, ":turret:")} {Formatter.Bold(ccv)}", true)
