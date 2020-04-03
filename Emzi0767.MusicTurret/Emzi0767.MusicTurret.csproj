@@ -22,7 +22,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>1.5.3</Version>
+    <Version>1.5.4</Version>
     <AssemblyVersion>$(Version).0</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <AssemblyTitle>Music Turret Discord Bot</AssemblyTitle>
@@ -31,19 +31,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00668" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00668" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00668" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00668" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00679" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00679" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00679" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00679" />
     <PackageReference Include="Humanizer.Core" Version="2.7.9" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.2">
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
+    <PackageReference Include="StackExchange.Redis" Version="2.1.28" />
   </ItemGroup>
 
   <ItemGroup>
