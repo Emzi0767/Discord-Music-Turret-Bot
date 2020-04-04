@@ -22,6 +22,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using Emzi0767.MusicTurret.Attributes;
 using Emzi0767.MusicTurret.Data;
 using Emzi0767.MusicTurret.Services;
 
@@ -30,7 +31,8 @@ namespace Emzi0767.MusicTurret.Modules
     [Group("admin")]
     [Aliases("botctl")]
     [ModuleLifespan(ModuleLifespan.Transient)]
-    [RequireOwner, Hidden]
+    [OwnerOrPermission(Permissions.ManageGuild)]
+    [Hidden]
     public sealed class AdminModule : BaseCommandModule
     {
         private DatabaseContext Database { get; }
@@ -40,7 +42,7 @@ namespace Emzi0767.MusicTurret.Modules
             this.Database = database;
         }
 
-        [Command("blacklist"), Description("Sets blacklisted status for a user, channel, or guild."), Aliases("block", "unblock")]
+        [Command("blacklist"), Description("Sets blacklisted status for a user, channel, or guild."), Aliases("block", "unblock"), RequireOwner]
         public async Task BlacklistAsync(CommandContext ctx,
             [Description("User whose blacklisted status to change.")] DiscordUser user,
             [Description("Whether the user should be blacklisted.")] bool blacklisted, 
