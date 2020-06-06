@@ -29,6 +29,7 @@ using DSharpPlus.Lavalink;
 using Emzi0767.MusicTurret.Attributes;
 using Emzi0767.MusicTurret.Data;
 using Emzi0767.MusicTurret.Services;
+using Emzi0767.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Emzi0767.MusicTurret
