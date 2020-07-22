@@ -276,11 +276,18 @@ namespace Emzi0767.MusicTurret
 
         private async Task Discord_VoiceStateUpdated(VoiceStateUpdateEventArgs e)
         {
+            var music = this.Services.GetService<MusicService>();
+            var gmd = await music.GetOrCreateDataAsync(e.Guild);
+            if (e.After.Channel == null && e.User == this.Discord.CurrentUser)
+            {
+                await gmd.StopAsync();
+                await gmd.DestroyPlayerAsync();
+                return;
+            }
+
             if (e.User == this.Discord.CurrentUser)
                 return;
 
-            var music = this.Services.GetService<MusicService>();
-            var gmd = await music.GetOrCreateDataAsync(e.Guild);
             var chn = gmd.Channel;
             if (chn == null || chn != e.Before.Channel)
                 return;
