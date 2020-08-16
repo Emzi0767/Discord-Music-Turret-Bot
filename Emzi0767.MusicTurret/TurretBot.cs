@@ -293,7 +293,7 @@ namespace Emzi0767.MusicTurret
                 return;
 
             var usrs = chn.Users;
-            if (gmd.IsPlaying && usrs.Count() == 1 && usrs.First() == this.Discord.CurrentUser)
+            if (gmd.IsPlaying && !usrs.Any(x => !x.IsBot))
             {
                 e.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, $"All users left voice in {e.Guild.Name}, pausing playback", DateTime.Now);
                 await gmd.PauseAsync();
