@@ -15,7 +15,6 @@
 // limitations under the License.
 
 using System.Collections.Generic;
-using Emzi0767.MusicTurret.Services;
 
 namespace Emzi0767.MusicTurret
 {
@@ -25,13 +24,13 @@ namespace Emzi0767.MusicTurret
     /// <typeparam name="T">Type of the item.</typeparam>
     public class Shuffler<T> : IComparer<T>
     {
-        public CSPRNG RNG { get; }
+        public SecureRandom RNG { get; }
 
         /// <summary>
         /// Creates a new shuffler.
         /// </summary>
         /// <param name="rng">Cryptographically-secure random number generator.</param>
-        public Shuffler(CSPRNG rng)
+        public Shuffler(SecureRandom rng)
         {
             this.RNG = rng;
         }

@@ -131,7 +131,7 @@ namespace Emzi0767.MusicTurret
 
             // create service provider
             this.Services = new ServiceCollection()
-                .AddTransient<CSPRNG>()
+                .AddTransient<SecureRandom>()
                 .AddSingleton(this.ConnectionStringProvider)
                 .AddSingleton<MusicService>()
                 .AddScoped<DatabaseContext>()
@@ -357,8 +357,9 @@ namespace Emzi0767.MusicTurret
             if (gld == null)
                 return Task.FromResult(-1);
 
+            using var db = new DatabaseContext(this.ConnectionStringProvider);
+
             var gldId = (long)gld.Id;
-            var db = new DatabaseContext(this.ConnectionStringProvider);
             var gpfix = db.Prefixes.SingleOrDefault(x => x.GuildId == gldId);
             if (gpfix != null)
             {

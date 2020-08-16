@@ -34,7 +34,7 @@ namespace Emzi0767.MusicTurret.Services
     {
         private LavalinkService Lavalink { get; }
         private RedisClient Redis { get; }
-        private CSPRNG RNG { get; }
+        private SecureRandom RNG { get; }
         private ConcurrentDictionary<ulong, GuildMusicData> MusicData { get; }
         private DiscordClient Discord { get; }
 
@@ -43,7 +43,7 @@ namespace Emzi0767.MusicTurret.Services
         /// </summary>
         /// <param name="redis">Redis client to use for persistence.</param>
         /// <param name="rng">Cryptographically-secure random number generator implementaion.</param>
-        public MusicService(RedisClient redis, CSPRNG rng, LavalinkService lavalink, TurretBot bot)
+        public MusicService(RedisClient redis, SecureRandom rng, LavalinkService lavalink, TurretBot bot)
         {
             this.Lavalink = lavalink;
             this.Redis = redis;

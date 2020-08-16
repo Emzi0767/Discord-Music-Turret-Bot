@@ -83,7 +83,7 @@ namespace Emzi0767.MusicTurret.Data
         private SemaphoreSlim QueueInternalLock { get; }
         private string QueueSerialized { get; set; }
         private DiscordGuild Guild { get; }
-        private CSPRNG RNG { get; }
+        private SecureRandom RNG { get; }
         private LavalinkService Lavalink { get; }
         private LavalinkGuildConnection Player { get; set; }
         private RedisClient Redis { get; } 
@@ -95,7 +95,7 @@ namespace Emzi0767.MusicTurret.Data
         /// <param name="rng">Cryptographically-secure random number generator implementation.</param>
         /// <param name="lavalink">Lavalink service.</param>
         /// <param name="redis">Redis service.</param>
-        public GuildMusicData(DiscordGuild guild, CSPRNG rng, LavalinkService lavalink, RedisClient redis)
+        public GuildMusicData(DiscordGuild guild, SecureRandom rng, LavalinkService lavalink, RedisClient redis)
         {
             this.Guild = guild;
             this.RNG = rng;
