@@ -442,7 +442,7 @@ namespace Emzi0767.MusicTurret.Data
             return this.Player.CurrentState.PlaybackPosition;
         }
 
-        private async Task Player_PlaybackFinished(TrackFinishEventArgs e)
+        private async Task Player_PlaybackFinished(LavalinkGuildConnection con, TrackFinishEventArgs e)
         {
             await Task.Delay(500);
             this.IsPlaying = false;

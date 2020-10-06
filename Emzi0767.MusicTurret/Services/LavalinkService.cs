@@ -22,6 +22,8 @@ using DSharpPlus.Lavalink;
 using DSharpPlus.Lavalink.EventArgs;
 using DSharpPlus.Net;
 using Emzi0767.MusicTurret.Data;
+using Emzi0767.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace Emzi0767.MusicTurret.Services
 {
@@ -30,6 +32,8 @@ namespace Emzi0767.MusicTurret.Services
     /// </summary>
     public sealed class LavalinkService
     {
+        public static EventId LogEvent { get; } = new EventId(1001, "LL-CCube");
+
         /// <summary>
         /// Gets the Lavalink node connection.
         /// </summary>
@@ -39,7 +43,7 @@ namespace Emzi0767.MusicTurret.Services
 
         private DiscordClient Discord { get; }
 
-        private readonly AsyncEvent<TrackExceptionEventArgs> _trackException;
+        private readonly AsyncEvent<LavalinkGuildConnection, TrackExceptionEventArgs> _trackException;
 
         /// <summary>
         /// Creates a new Lavalink service with specified configuration options.
@@ -51,15 +55,15 @@ namespace Emzi0767.MusicTurret.Services
             this.Configuration = cfg;
             this.Discord = client;
             this.Discord.Ready += this.Client_Ready;
-            this._trackException = new AsyncEvent<TrackExceptionEventArgs>(this.EventExceptionHandler, "TURRET_LAVALINK_TRACK_EXCEPTION");
+            this._trackException = new AsyncEvent<LavalinkGuildConnection, TrackExceptionEventArgs>("TURRET_LAVALINK_TRACK_EXCEPTION", TimeSpan.Zero, this.EventExceptionHandler);
         }
 
-        private async Task Client_Ready(ReadyEventArgs e)
+        private async Task Client_Ready(DiscordClient sender, ReadyEventArgs e)
         {
             if (this.LavalinkNode != null)
                 return;
 
-            var lava = e.Client.GetLavalink();
+            var lava = sender.GetLavalink();
             this.LavalinkNode = await lava.ConnectAsync(new LavalinkConfiguration
             {
                 Password = this.Configuration.Password,
@@ -71,18 +75,23 @@ namespace Emzi0767.MusicTurret.Services
             this.LavalinkNode.TrackException += this.LavalinkNode_TrackException;
         }
 
-        private async Task LavalinkNode_TrackException(TrackExceptionEventArgs e)
+        private async Task LavalinkNode_TrackException(LavalinkGuildConnection con, TrackExceptionEventArgs e)
         {
-            await this._trackException.InvokeAsync(e);
+            await this._trackException.InvokeAsync(con, e);
         }
 
-        public event AsyncEventHandler<TrackExceptionEventArgs> TrackExceptionThrown
+        public event AsyncEventHandler<LavalinkGuildConnection, TrackExceptionEventArgs> TrackExceptionThrown
         {
             add => this._trackException.Register(value);
             remove => this._trackException.Unregister(value);
         }
 
-        private void EventExceptionHandler(string name, Exception ex)
-            =>this.Discord.DebugLogger.LogMessage(LogLevel.Error, "LL-Turret", $"Exception occured during track playback", DateTime.Now, ex);
+        private void EventExceptionHandler(
+            AsyncEvent<LavalinkGuildConnection, TrackExceptionEventArgs> asyncEvent,
+            Exception exception,
+            AsyncEventHandler<LavalinkGuildConnection, TrackExceptionEventArgs> handler,
+            LavalinkGuildConnection sender,
+            TrackExceptionEventArgs eventArgs)
+            => this.Discord.Logger.LogError(LogEvent, exception, "Exception occured during track playback");
     }
 }

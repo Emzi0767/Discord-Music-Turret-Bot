@@ -31,6 +31,7 @@ using Emzi0767.MusicTurret.Data;
 using Emzi0767.MusicTurret.Services;
 using Emzi0767.Utilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Emzi0767.MusicTurret
 {
@@ -42,7 +43,7 @@ namespace Emzi0767.MusicTurret
         /// <summary>
         /// Gets the tag used when emitting log events from the bot.
         /// </summary>
-        public const string LOG_TAG = "Music Turret";
+        public static EventId LogEvent { get; } = new EventId(1000, "MTurret");
 
         /// <summary>
         /// Gets the discord client instance for this bot shard.
@@ -112,19 +113,12 @@ namespace Emzi0767.MusicTurret
                 AutoReconnect = true,
                 ReconnectIndefinitely = true,
                 GatewayCompressionLevel = GatewayCompressionLevel.Stream,
-                LargeThreshold = 250,
-
-                UseInternalLogHandler = false,
-                LogLevel = LogLevel.Info
+                LargeThreshold = 250
             });
-
-            // attach log handler
-            this.Discord.DebugLogger.LogMessageReceived += this.DebugLogger_LogMessageReceived;
 
             // attach event handlers
             this.Discord.Ready += this.Discord_Ready;
             this.Discord.GuildDownloadCompleted += this.Discord_GuildDownloadCompleted;
-            this.Discord.ClientErrored += this.Discord_ClientErrored;
             this.Discord.SocketErrored += this.Discord_SocketErrored;
             this.Discord.GuildAvailable += this.Discord_GuildAvailable;
             this.Discord.VoiceStateUpdated += this.Discord_VoiceStateUpdated;
@@ -183,98 +177,43 @@ namespace Emzi0767.MusicTurret
         /// <returns></returns>
         public Task StartAsync()
         {
-            this.Discord.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, "Booting Turret shard.", DateTime.Now);
+            this.Discord.Logger.LogInformation(LogEvent, "Booting Turret shard.");
             return this.Discord.ConnectAsync();
         }
 
-        private void DebugLogger_LogMessageReceived(object sender, DebugLogMessageEventArgs e)
+        private Task Discord_Ready(DiscordClient sender, ReadyEventArgs e)
         {
-            lock (this._logLock)
-            {
-                var fg = Console.ForegroundColor;
-                var bg = Console.BackgroundColor;
-
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.Write("[{0:yyyy-MM-dd HH:mm:ss zzz}] [{1}] ", e.Timestamp, e.Application.ToFixedWidth(12));
-
-                switch (e.Level)
-                {
-                    case LogLevel.Critical:
-                        Console.BackgroundColor = ConsoleColor.Red;
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        break;
-
-                    case LogLevel.Error:
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        break;
-
-                    case LogLevel.Warning:
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        break;
-
-                    case LogLevel.Info:
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        break;
-
-                    case LogLevel.Debug:
-                        Console.ForegroundColor = ConsoleColor.Magenta;
-                        break;
-                }
-                Console.Write("[{0}]", e.Level.ToString().ToFixedWidth(4));
-
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.WriteLine(" [{0:00}] {1}", this.ShardId, e.Message);
-
-                Console.ForegroundColor = fg;
-                Console.BackgroundColor = bg;
-            }
-        }
-
-        private Task Discord_Ready(ReadyEventArgs e)
-        {
-            e.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, "Client is ready to process events", DateTime.Now);
+            sender.Logger.LogInformation(LogEvent, "Client is ready to process events");
 
             if (this.GameTimer == null && !string.IsNullOrWhiteSpace(this.Configuration.Discord.Game))
-                this.GameTimer = new Timer(this.GameTimerCallback, e.Client, TimeSpan.Zero, TimeSpan.FromHours(1));
+                this.GameTimer = new Timer(this.GameTimerCallback, sender, TimeSpan.Zero, TimeSpan.FromHours(1));
 
             return Task.CompletedTask;
         }
 
-        private Task Discord_GuildDownloadCompleted(GuildDownloadCompletedEventArgs e)
+        private Task Discord_GuildDownloadCompleted(DiscordClient sender, GuildDownloadCompletedEventArgs e)
         {
-            e.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, "All guilds are now available", DateTime.Now);
+            sender.Logger.LogInformation(LogEvent, "All guilds are now available");
             return Task.CompletedTask;
         }
 
-        private Task Discord_ClientErrored(ClientErrorEventArgs e)
-        {
-            var ex = e.Exception;
-            while (ex is AggregateException)
-                ex = ex.InnerException;
-
-            e.Client.DebugLogger.LogMessage(LogLevel.Critical, LOG_TAG, $"{e.EventName} threw an exception {ex.GetType()}: {ex.Message}", DateTime.Now);
-            return Task.CompletedTask;
-        }
-
-        private Task Discord_SocketErrored(SocketErrorEventArgs e)
+        private Task Discord_SocketErrored(DiscordClient sender, SocketErrorEventArgs e)
         {
             var ex = e.Exception;
             while (ex is AggregateException)
                 ex = ex.InnerException;
 
-            e.Client.DebugLogger.LogMessage(LogLevel.Critical, LOG_TAG, $"Socket threw an exception {ex.GetType()}: {ex.Message}", DateTime.Now);
+            sender.Logger.LogCritical(LogEvent, $"Socket threw an exception {ex.GetType()}: {ex.Message}");
             return Task.CompletedTask;
         }
 
-        private Task Discord_GuildAvailable(GuildCreateEventArgs e)
+        private Task Discord_GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
         {
-            e.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, $"Guild available: {e.Guild.Name}", DateTime.Now);
+            sender.Logger.LogInformation(LogEvent, $"Guild available: {e.Guild.Name}");
             return Task.CompletedTask;
         }
 
-        private async Task Discord_VoiceStateUpdated(VoiceStateUpdateEventArgs e)
+        private async Task Discord_VoiceStateUpdated(DiscordClient sender, VoiceStateUpdateEventArgs e)
         {
             var music = this.Services.GetService<MusicService>();
             var gmd = await music.GetOrCreateDataAsync(e.Guild);
@@ -295,28 +234,27 @@ namespace Emzi0767.MusicTurret
             var usrs = chn.Users;
             if (gmd.IsPlaying && !usrs.Any(x => !x.IsBot))
             {
-                e.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, $"All users left voice in {e.Guild.Name}, pausing playback", DateTime.Now);
+                sender.Logger.LogInformation(LogEvent, $"All users left voice in {e.Guild.Name}, pausing playback");
                 await gmd.PauseAsync();
                 await gmd.SaveAsync();
                 
                 if (gmd.CommandChannel != null)
-                    await gmd.CommandChannel.SendMessageAsync($"{DiscordEmoji.FromName(e.Client, ":play_pause:")} All users left the channel, playback paused. You can resume it by joining the channel and using the `resume` command.");
+                    await gmd.CommandChannel.SendMessageAsync($"{DiscordEmoji.FromName(sender, ":play_pause:")} All users left the channel, playback paused. You can resume it by joining the channel and using the `resume` command.");
             }
         }
 
-        private Task CommandsNext_CommandExecuted(CommandExecutionEventArgs e)
+        private Task CommandsNext_CommandExecuted(CommandsNextExtension sender, CommandExecutionEventArgs e)
         {
-            e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG,
-                $"User '{e.Context.User.Username}#{e.Context.User.Discriminator}' ({e.Context.User.Id}) executed '{e.Command.QualifiedName}' in #{e.Context.Channel.Name} ({e.Context.Channel.Id})", 
-                DateTime.Now);
+            e.Context.Client.Logger.LogInformation(LogEvent,
+                $"User '{e.Context.User.Username}#{e.Context.User.Discriminator}' ({e.Context.User.Id}) executed '{e.Command.QualifiedName}' in #{e.Context.Channel.Name} ({e.Context.Channel.Id})");
             return Task.CompletedTask;
         }
 
-        private async Task CommandsNext_CommandErrored(CommandErrorEventArgs e)
+        private async Task CommandsNext_CommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
         {
-            e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, LOG_TAG,
+            e.Context.Client.Logger.LogError(LogEvent,
                 $"User '{e.Context.User.Username}#{e.Context.User.Discriminator}' ({e.Context.User.Id}) tried to execute '{e.Command?.QualifiedName ?? "<unknown command>"}' "
-                + $"in #{e.Context.Channel.Name} ({e.Context.Channel.Id}) and failed with {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+                + $"in #{e.Context.Channel.Name} ({e.Context.Channel.Id}) and failed with {e.Exception.GetType()}: {e.Exception.Message}");
             DiscordEmbedBuilder embed = null;
 
             var ex = e.Exception;
@@ -390,11 +328,11 @@ namespace Emzi0767.MusicTurret
             try
             {
                 this.AsyncExecutor.Execute(client.UpdateStatusAsync(new DiscordActivity(this.Configuration.Discord.Game), UserStatus.Online, null));
-                client.DebugLogger.LogMessage(LogLevel.Info, LOG_TAG, "Presence updated", DateTime.Now);
+                client.Logger.LogInformation(LogEvent, "Presence updated");
             }
             catch (Exception ex)
             {
-                client.DebugLogger.LogMessage(LogLevel.Error, LOG_TAG, $"Could not update presence ({ex.GetType()}: {ex.Message})", DateTime.Now);
+                client.Logger.LogError(LogEvent, $"Could not update presence ({ex.GetType()}: {ex.Message})");
             }
         }
     }
