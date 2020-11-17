@@ -58,21 +58,24 @@ namespace Emzi0767.MusicTurret.Services
             this._trackException = new AsyncEvent<LavalinkGuildConnection, TrackExceptionEventArgs>("TURRET_LAVALINK_TRACK_EXCEPTION", TimeSpan.Zero, this.EventExceptionHandler);
         }
 
-        private async Task Client_Ready(DiscordClient sender, ReadyEventArgs e)
+        private Task Client_Ready(DiscordClient sender, ReadyEventArgs e)
         {
-            if (this.LavalinkNode != null)
-                return;
+            if (this.LavalinkNode == null)
+                _ = Task.Run(async () =>
+                {
+                    var lava = sender.GetLavalink();
+                    this.LavalinkNode = await lava.ConnectAsync(new LavalinkConfiguration
+                    {
+                        Password = this.Configuration.Password,
 
-            var lava = sender.GetLavalink();
-            this.LavalinkNode = await lava.ConnectAsync(new LavalinkConfiguration
-            {
-                Password = this.Configuration.Password,
+                        SocketEndpoint = new ConnectionEndpoint(this.Configuration.Hostname, this.Configuration.Port),
+                        RestEndpoint = new ConnectionEndpoint(this.Configuration.Hostname, this.Configuration.Port)
+                    });
 
-                SocketEndpoint = new ConnectionEndpoint(this.Configuration.Hostname, this.Configuration.Port),
-                RestEndpoint = new ConnectionEndpoint(this.Configuration.Hostname, this.Configuration.Port)
-            });
+                    this.LavalinkNode.TrackException += this.LavalinkNode_TrackException;
+                });
 
-            this.LavalinkNode.TrackException += this.LavalinkNode_TrackException;
+            return Task.CompletedTask;
         }
 
         private async Task LavalinkNode_TrackException(LavalinkGuildConnection con, TrackExceptionEventArgs e)
