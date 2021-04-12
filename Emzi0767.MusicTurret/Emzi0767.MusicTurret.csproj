@@ -22,7 +22,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <Version>1.7.0</Version>
+    <Version>1.7.1</Version>
     <AssemblyVersion>$(Version).0</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <AssemblyTitle>Music Turret Discord Bot</AssemblyTitle>
@@ -31,20 +31,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-rc1" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-rc1" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-rc1" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-rc1" />
-    <PackageReference Include="Emzi0767.Common" Version="2.2.2" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0" />
+    <PackageReference Include="Emzi0767.Common" Version="2.6.1" />
     <PackageReference Include="Humanizer.Core" Version="2.8.26" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.0">
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.0-preview2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-preview.3.21201.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="StackExchange.Redis" Version="2.1.58" />
+    <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
   </ItemGroup>
 
   <ItemGroup>
